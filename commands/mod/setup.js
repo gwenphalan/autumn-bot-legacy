@@ -64,7 +64,16 @@ module.exports = class ClassName extends commando.Command {
               ]
         })
     }
-
+    async getGuildInfo(id)
+{
+  return new Promise((resolve, reject) => {
+    con.query(
+      "SELECT * FROM guildsettings WHERE Guild = '" + id + "' LIMIT 1", 
+      (err, result) => {
+        return err ? reject(err) : resolve(result);
+      })
+  })
+}
     createAV(g){
         return g.createRole({
             name: "Awaiting Verification",
@@ -157,11 +166,7 @@ module.exports = class ClassName extends commando.Command {
             return;
         };
   
-        let currGuild = guilds.filter(function(object) {
-            return object.Guild == msg.guild.id;
-        });
-
-        console.log(currGuild);
+        let currGuild = await this.getGuildInfo(msg.guild.id);
 
         //let table = await client.loadTable("guildsettings");
         if(currGuild[0] != undefined){
@@ -286,7 +291,7 @@ module.exports = class ClassName extends commando.Command {
                 mvchan = await this.createMVChan(g, everyone, staff);
                 console.log(mvchan);
                 
-                var verifyModle = {
+                var verifyModule = {
                     VerifyChannel: verify,
                     AVChannel: avchan,
                     MVChannel: mvchan,
@@ -296,7 +301,9 @@ module.exports = class ClassName extends commando.Command {
                     VMessage: 'You have been verified!',
                 }
                 
-                var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${guild}', '${JSON.stringify(verifyModule)}')`;
+                var verifyModuleJSON = JSON.stringify(verifyModule);
+                
+                var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${guild}', '${verifyModuleJSON}')`;
                 con.query(sql, function (err, result) {
                 if (err) throw err;
                       console.log("1 record inserted");

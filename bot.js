@@ -5,7 +5,6 @@ const path = require('path');
 const oneLine = require('common-tags').oneLine;
 const mysql = require('mysql');
 const sqlite = require('sqlite');
-const request = require('request'); 
 const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XjNG_w.ktL1L5yv_TPvTOlIHjgyBZXXL5k';
 const DBL = require("dblapi.js");
 const apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjU0ODQzNzM0NjIyMjExMCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTgyNTk3MzQ3fQ.AOFlwDk84YGZBAdcRHSnmNYB05adjih6GRWONTR4VJk';

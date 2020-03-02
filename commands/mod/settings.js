@@ -64,9 +64,6 @@ module.exports = class ClassName extends commando.Command {
     escapeSpecialChars(jsonString) {
         return jsonString
           .replace(/\n/g, "\\n")
-          .replace(/\r/g, "\\r")
-          .replace(/\t/g, "\\t")
-          .replace(/\f/g, "\\f");
       
     }
 
@@ -188,31 +185,38 @@ module.exports = class ClassName extends commando.Command {
         }
     }
 
-    async updateVerifySetting(setting, value, msg, settingV){
+    async updateVerifySetting(setting, value, msg, settingV, valueV){
         let guildInfo = await this.getGuildInfo(msg.guild.id);
 
-        let VerifyModuleJSON = guildInfo.VerifyModule;
+        let VerifyModuleJSON = guildInfo[0].VerifyModule;
 
         var VerifyModuleOBJ = JSON.parse(this.escapeSpecialChars(VerifyModuleJSON));
 
         switch(setting) {
             case "VerifyChannel": VerifyModuleOBJ.VerifyChannel = value;
+            break;
             case "AVChannel": VerifyModuleOBJ.AVChannel = value;
+            break;
             case "MVChannel": VerifyModuleOBJ.MVChannel = value;
+            break;
             case "StaffRole": VerifyModuleOBJ.StaffRole = value;
+            break;
             case "MemberRole": VerifyModuleOBJ.MemberRole = value;
+            break;
             case "AVRole": VerifyModuleOBJ.AVRole = value;
+            break;
             case "VMessage": VerifyModuleOBJ.VMessage = value;
+            break;
             default: VerifyModuleOBJ = VerifyModuleOBJ;
         }
         
-        var final = JSON.stringify(VerifyModule);
+        var final = JSON.stringify(VerifyModuleOBJ);
 
         var a = 0;
         var count = 0;
-        for(a = 0; a < JSON.stringify(VerifyModule).length; a++)
+        for(a = 0; a < JSON.stringify(VerifyModuleOBJ).length; a++)
         {
-            if(JSON.stringify(VerifyModule).charAt(a) == "'")
+            if(JSON.stringify(VerifyModuleOBJ).charAt(a) == "'")
             {
                 final = [final.slice(0, a+count), '\\', final.slice(a+count)].join('');
                 count++;
@@ -220,14 +224,14 @@ module.exports = class ClassName extends commando.Command {
             }
         }
 
-        var sql = "UPDATE guildsettings SET VerifyModle = '" + final + "' WHERE Guild = '" + msg.guild.id + "'";
+        var sql = "UPDATE guildsettings SET VerifyModule = '" + final + "' WHERE Guild = '" + msg.guild.id + "'";
 
         con.query(sql, function (err, result) {
           if (err) throw err;
           console.log(result.affectedRows + " record(s) updated");
         });
 
-        msg.channel.send("`" + settingV + "` **has been updated to** " + value);
+        msg.channel.send("`" + settingV + "` **has been updated to** `" + valueV + "`");
 
     }
 
@@ -241,7 +245,7 @@ module.exports = class ClassName extends commando.Command {
 
         let role = msg.mentions.roles.first().id
 
-        this.updateVerifySetting(setting, role, msg, settingV);
+        this.updateVerifySetting(setting, role, msg, settingV, `<@&${value}>`);
         
         this.updatePermissions(msg.guild, msg)
     }
@@ -256,7 +260,7 @@ module.exports = class ClassName extends commando.Command {
 
         let channel = msg.mentions.channels.first().id
         
-        this.updateVerifySetting(setting, channel, msg, settingV);
+        this.updateVerifySetting(setting, channel, msg, settingV, `<#${value}>`);
 
         this.updatePermissions(msg.guild, msg)
     }
@@ -305,49 +309,49 @@ module.exports = class ClassName extends commando.Command {
             if(setting == "acceptMessage")
             { //Accept Message Setting View
 
-                const value = currGuild[0].VMessage;
+                const value = currGuild.VMessage;
                 msg.channel.send(`Setting: \`${setting}\`\nValue: \`"${value}"\``);
 
             }
             else if(setting == "verifyChannel")
             { //Verify Channel Setting View
 
-                const value = currGuild[0].VChannel;
+                const value = currGuild.VChannel;
                 msg.channel.send(`Setting: \`${setting}\`\nValue: \`<#${value}>\``);
 
             }
             else if(setting == "awaitVerifyChannel")
             { //Await Verify Channel Setting View
 
-                const value = currGuild[0].AVChannel;
+                const value = currGuild.AVChannel;
                 msg.channel.send(`Setting: \`${setting}\`\nValue: \`<#${value}>\``);
 
             }
             else if(setting == "modVerifyChannel")
             { //Mod Verify Channel Setting View
 
-                const value = currGuild[0].MVChannel;
+                const value = currGuild.MVChannel;
                 msg.channel.send(`Setting: \`${setting}\`\nValue: \`<#${value}>\``);
 
             }
             else if(setting == "staffRole")
             { //Staff Role Setting View
 
-                const value = currGuild[0].StaffRole;
+                const value = currGuild.StaffRole;
                 msg.channel.send(`Setting: \`${setting}\`\nValue: \`<#&${value}>\``);
 
             }
             else if(setting == "memberRole")
             { //Member Role Setting View
 
-                const value = currGuild[0].MemberRole;
+                const value = currGuild.MemberRole;
                 msg.channel.send(`Setting: \`${setting}\`\nValue: \`<#&${value}>\``);
 
             }
             else if(setting == "awaitVerifyRole")
             { //Await Verify Role Setting View
 
-                const value = currGuild[0].AVRole;
+                const value = currGuild.AVRole;
                 msg.channel.send(`Setting: \`${setting}\`\nValue: \`<@&${value}>\``);
 
             }
@@ -364,30 +368,7 @@ module.exports = class ClassName extends commando.Command {
         }else{
             if(setting == "acceptMessage"){ //Accept Message Setting Change
                 
-                var final = value;
-
-                var i = 0;
-                var count = 0;
-                for(i = 0; i < value.length; i++)
-                {
-                    if(value.charAt(i) == "'")
-                    {
-                        final = [final.slice(0, i+count), '\\', final.slice(i+count)].join('');
-                        count++;
-                    }
-                }
-
-                console.log(final);
-
-                var sql = "UPDATE guildsettings SET VMessage = '" + final + "' WHERE Guild = '" + msg.guild.id + "'";
-
-                con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log(result.affectedRows + " record(s) updated");
-                  
-                });
-
-                msg.channel.send("`" + setting + "` **has been updated to** `" + value + "`");
+                this.updateVerifySetting("VMessage", value, msg, "acceptMessage",  `\`${value}>\``);
             }else if(setting == "verifyChannel"){ //Verify Channel Setting Change
 
                 this.updateChannel("VerifyChannel", value, msg, "verifyChannel");
