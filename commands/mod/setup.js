@@ -245,22 +245,9 @@ module.exports = class ClassName extends commando.Command {
                 avrole = await this.createAV(g);
                 console.log(avrole);
                 
+                verifier = await this.createStaff(g);
                 
-                if(args.staffRole == "create"){
-                    staff = await this.createStaff(g);
-                }else{
-                    staff = args.staffRole.id;
-        
-                    console.log(staff);
-                };
-        
-                if(args.memberRole == "create"){
-                    member = await this.createMember(g);
-                }else{
-                    member = args.memberRole.id;
-        
-                    console.log(member);
-                };
+                nonverified = await this.createMember(g);
                 
                 /*
                  *Update current channels permissions.
@@ -292,12 +279,11 @@ module.exports = class ClassName extends commando.Command {
                 console.log(mvchan);
                 
                 var verifyModule = {
+                    enabled: false,
                     VerifyChannel: verify,
-                    AVChannel: avchan,
                     MVChannel: mvchan,
                     StaffRole: staff,
-                    MemberRole: member,
-                    AVRole: avrole,
+                    NonVerifiedRole: nonverified,
                     VMessage: 'You have been verified!',
                 }
                 

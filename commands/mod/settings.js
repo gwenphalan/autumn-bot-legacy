@@ -67,7 +67,7 @@ module.exports = class ClassName extends commando.Command {
       
     }
 
-    async updatePermissions(guild, msg)
+    /*async updatePermissions(guild, msg)
     {   
         var guildInfo = await this.getGuildInfo(guild.id);
 
@@ -183,7 +183,7 @@ module.exports = class ClassName extends commando.Command {
                 });
             }
         }
-    }
+    }*/
 
     async updateVerifySetting(setting, value, msg, settingV, valueV){
         let guildInfo = await this.getGuildInfo(msg.guild.id);
@@ -247,7 +247,8 @@ module.exports = class ClassName extends commando.Command {
 
         this.updateVerifySetting(setting, role, msg, settingV, `<@&${value}>`);
         
-        this.updatePermissions(msg.guild, msg)
+        //this.updatePermissions(msg.guild, msg)
+        msg.channel.send("Sorry, Permissions Updating Is Currently Broken. You'll have to do it manually.")
     }
 
     updateChannel(setting, value, msg, settingV)
@@ -261,8 +262,9 @@ module.exports = class ClassName extends commando.Command {
         let channel = msg.mentions.channels.first().id
         
         this.updateVerifySetting(setting, channel, msg, settingV, `<#${value}>`);
-
-        this.updatePermissions(msg.guild, msg)
+        
+        //this.updatePermissions(msg.guild, msg)
+        msg.channel.send("Sorry, Permissions Updating Is Currently Broken. You'll have to do it manually.")
     }
 
     
