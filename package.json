@@ -1,0 +1,21 @@
+{
+	"name": "autumn-bot",
+	"version": "1.0.0",
+	"description": "A discord bot with useful moderation utilities.",
+	"main": "bot.js",
+	"scripts": {
+		"start": "node bot.js"
+	},
+	"author": "Gwen Bebe",
+	"license": "GPL-3.0",
+	"dependencies": {
+		"dblapi.js": "^2.3.1",
+		"discord.js": "^11.5.1",
+		"discord.js-commando": "^0.10.0",
+		"discord.js-commando-mysqlprovider": "^0.1.0",
+		"fs": "0.0.1-security",
+		"mysql": "^2.18.1",
+		"request": "^2.88.0",
+		"sqlite": "^2.9.3"
+	}
+}
