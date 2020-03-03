@@ -372,6 +372,8 @@ client.on("message", async (message) => {
     
     let currGuild = await getGuildInfo(message.guild.id);
 
+    if(!currGuild[0]) return; 
+
     let verifyModuleJSON = currGuild[0].VerifyModule;
   
     var verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
