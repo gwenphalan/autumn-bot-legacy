@@ -341,8 +341,6 @@ client.setProvider(
 ).catch(console.error);
 
 client.on("guildMemberAdd", async (member) =>{
-  if(member.guild.id != "683568443709980847") return;
-
   let currGuild = await getGuildInfo(member.guild.id);
 
   let verifyModuleJSON = currGuild[0].VerifyModule;
