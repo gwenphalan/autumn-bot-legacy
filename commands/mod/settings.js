@@ -269,21 +269,9 @@ module.exports = class ClassName extends commando.Command {
 
     
     async run(msg, { setting, value }) {
-        const settings = new Discord.RichEmbed()
+        const settings = new Discord.MessageEmbed()
             .setTitle('Settings')
-            .setDescription('To view a setting, do `-settings {setting}`\n\nTo edit a setting do `-settings {setting} {value}`')
-            .addField('<:Blank:680820567930175538>', '**Verification**', true)
-            .addBlankField(true)
-            .addBlankField(true)
-            .addField('<:icon_red:680816713864183877> `acceptMessage`', 'The acceptMessage is the message sent to users accepted for verification.\n ', true)
-            .addField('<:icon_red:680816713864183877> `verifyChannel`', 'The verifyChannel is the channel where users send their verification application.\n ', true)
-            .addField('<:icon_red:680816713864183877> `awaitVerifyChannel`', 'The awaitVerifyChannel is the channel users are sent to when they await verification.\n ', true)
-            .addField('<:icon_red:680816713864183877> `modVerifyChannel`', 'The modVerifyChannel is the channel where applications are sent to be accepted/denied my moderators.\n ', true)
-            .addField('<:icon_red:680816713864183877> `staffRole`', 'The staffRole is the role given to those who have access to the modVerifyChannel and accept/deny applications.\n ', true)
-            .addField('<:icon_red:680816713864183877> `memberRole`', 'The memberRole is the role given to verified users.\n ', true)
-            .addField('<:icon_red:680816713864183877> `awaitVerifyRole`', 'The awaitVerifyRole is the users awaiting verification.\n ', true)
-            .addBlankField(true)
-            .addBlankField(true)
+            .setDescription('**The `-settings` command has been removed!** Go to https://www.autumnbot.net/dashboard to setup the Verification Module.')
             .setColor('#db583e')
         
 

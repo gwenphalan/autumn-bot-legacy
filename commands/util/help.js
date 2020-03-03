@@ -18,13 +18,13 @@ module.exports = class ClassName extends commando.Command {
     }
 
     async run(msg) {
-        const help = new Discord.RichEmbed()
+        const help = new Discord.MessageEmbed()
             .setTitle('Help')
             .addField('<:Blank:680820567930175538>', '**Fun** [Vote For The Bot](https://top.gg/bot/672548437346222110/vote) every 12 hours to get cooler looking fun commands.')
             .addField('<:icon_red:680816713864183877> `-hug {user}`', 'Hugs the targetted user.', true)
             .addField('<:icon_red:680816713864183877> `-poke {user}`', 'Pokes the targetted user.', true)
             .addField('<:icon_red:680816713864183877> `-pat {user}`', 'Pats the targetted user\'s head.', true)
-            .addBlankField(true)
+            .addField('\u200b', '\u200b')
             .addField('<:Blank:680820567930175538>', '**Utilities**')
             .addField('<:icon_red:680816713864183877> `-help`', 'Displays this menu.', true)
             .addField('<:icon_red:680816713864183877> `-info`', 'Gives info about setting up the server.', true)
