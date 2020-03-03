@@ -372,7 +372,13 @@ client.on("message", async (message) => {
     
     let currGuild = await getGuildInfo(message.guild.id);
 
-    if(!currGuild[0]) return; 
+    if(!currGuild[0]){
+      var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${message.guild.id}', '{"enabled":false}')`;
+      con.query(sql, function (err, result) {
+      if (err) throw err;
+            console.log("1 record inserted");
+      });
+    };
 
     let verifyModuleJSON = currGuild[0].VerifyModule;
   
