@@ -155,6 +155,12 @@ client.on("guildCreate", async function(guild) {
       }
   }).then(() => console.log('Status Set'));
 
+  var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${guild.id}', '{"enabled":false}')`;
+  con.query(sql, function (err, result) {
+  if (err) throw err;
+        console.log("1 record inserted");
+  });
+
   let welcome = new Discord.MessageEmbed()
   .setColor('#db583e')
   .setTitle('Thank you for inviting me to your server!')
