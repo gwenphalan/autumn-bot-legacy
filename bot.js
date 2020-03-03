@@ -6,7 +6,6 @@ const oneLine = require('common-tags').oneLine;
 const mysql = require('mysql');
 const sqlite = require('sqlite');
 const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XjNG_w.ktL1L5yv_TPvTOlIHjgyBZXXL5k';
-const DBL = require("dblapi.js");
 const apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjU0ODQzNzM0NjIyMjExMCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTgyNTk3MzQ3fQ.AOFlwDk84YGZBAdcRHSnmNYB05adjih6GRWONTR4VJk';
 
 var con = mysql.createConnection({
@@ -21,7 +20,6 @@ const client = new commando.Client({
   unknownCommandResponse: false,
   invite: 'https://discord.gg/DfByvyN'
 });
-const dbl = new DBL(apiToken, client);
 
 async function getGuildInfo(id)
 {
@@ -149,36 +147,37 @@ client.on("ready", async function(){
   }
 });*/
 
-client.on("guildCreate", guild => {
-  client.user.setPresence({
-      game: {
-          name: client.guilds.size + ' servers | -news',
+client.on("guildCreate", async function(guild) {
+  await client.user.setPresence({
+      activity: {
+          name: client.guilds.cache.size + ' servers | -news',
           type: "LISTENING",
       }
   }).then(() => console.log('Status Set'));
 
-  let welcome = new Discord.RichEmbed()
+  let welcome = new Discord.MessageEmbed()
   .setColor('#db583e')
   .setTitle('Thank you for inviting me to your server!')
   .setDescription('Do `-help` for a list of commands.\n\nFor information on setting up the verification function, do `-info`.\n\nIf you need any support, visit [this server](https://discord.gg/tbUuhB7).');
   guild.owner.send(welcome);
 });
 
-client.on("guildDelete", guild => {
+client.on("guildDelete", async function(guild){
   var sql = `DELETE FROM guildsettings WHERE Guild = '${guild.id}'`;
   con.query(sql, function (err, result) {
     if (err) throw err;
     console.log("Number of records deleted: " + result.affectedRows);
   });
   
-  client.user.setPresence({
-      game: {
-          name: client.guilds.size + ' servers | -news',
+  await client.user.setPresence({
+      activity: {
+          name: client.guilds.cache.size + ' servers | -news',
           type: "LISTENING",
       }
   }).then(() => console.log('Status Set'));
 })
 
+/*
 client.on("channelCreate", async (channel) => {
   if(channel.guild){
 
@@ -192,7 +191,10 @@ client.on("channelCreate", async (channel) => {
     };
   
     
-    let mRole = channel.guild.roles.get(guildSettings[0].MemberRole);
+    let mRole;
+    await channel.guild.roles.fetch(guildSettings[0].VerfiyModule).then(() => {
+      mRole = 
+    });
   
     channel.overwritePermissions(channel.guild.defaultRole.id, {
       VIEW_CHANNEL: false
@@ -202,7 +204,7 @@ client.on("channelCreate", async (channel) => {
       VIEW_CHANNEL: true
     });
   }
-});
+});*/
 
 function getAttachment(msg){
   try{
@@ -213,7 +215,8 @@ function getAttachment(msg){
     return 'No Attachments'
   }
 }
-//
+
+/*
 client.on('message', msg => 
 {
 
@@ -229,7 +232,7 @@ client.on('message', msg =>
       .setDescription('Your submission did not have a description!')
       .setTitle('SUBMISSION ERROR');//
 
-      if(msg.channel.id == '674369829179752482' && !msg.author.bot /*|| msg.channel.id == '673092933695832084' && !msg.author.bot*/)
+      if(msg.channel.id == '674369829179752482' && !msg.author.bot /*|| msg.channel.id == '673092933695832084' && !msg.author.bot)
       {
         //msg.channel.send('URL: ' + getAttachment(msg));
         if(attachments == undefined){
@@ -248,19 +251,19 @@ client.on('message', msg =>
         var submission = new Discord.RichEmbed()
           .setColor('#faff66')
           .setTitle('Submission')
-          .setAuthor(msg.author.tag, msg.author.avatarURL)
+          .setAuthor(msg.author.tag, msg.author.avatarURL())
           .setDescription(msg.content)
           .setImage(img)
   
-          client.channels.get('674369842375295016').send(submission)
+          client.channels.fetch('674369842375295016').send(submission)
           .then(function(msg){
             msg.react(client.emojis.get('674382678312615955'))
           });
           msg.delete(500);
-          msg.member.addRole('674368716284100634');
+          msg.member.roles.add('674368716284100634');
           return;
       }
-})
+})*/
 
 client.on("ready", () => {
   console.log("Loading...");
@@ -275,11 +278,11 @@ client
   .on('error', console.error)
   .on('warn', console.warn)
   .on('debug', console.log)
-  .on('ready', () => {
+  .on('ready', async function(){
     client.user.setStatus('available')
-    client.user.setPresence({
-        game: {
-            name: client.guilds.size + ' servers | -news',
+    await client.user.setPresence({
+        activity: {
+            name: client.guilds.cache.size + ' servers | -news',
             type: "LISTENING",
         }
     }).then(() => console.log('Status Set'));
@@ -331,115 +334,185 @@ client.setProvider(
   sqlite.open(path.join(__dirname, 'database.sqlite3')).then(db => new commando.SQLiteProvider(db))
 ).catch(console.error);
 
+client.on("guildMemberAdd", async (member) =>{
+  if(member.guild.id != "683568443709980847") return;
+
+  let currGuild = await getGuildInfo(member.guild.id);
+
+  let verifyModuleJSON = currGuild[0].VerifyModule;
+
+  var verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
+
+  console.log(verifyModule.NonVerifiedRole);
+
+  if(verifyModule.enabled){
+    var nonVerifiedRole = verifyModule.NonVerifiedRole;
+
+    member.roles.add(nonVerifiedRole);
+  }
+})
 
 client.on("message", async (message) => {
-  
   if(message.guild)
   {
+    var setup = new Discord.MessageEmbed()
+    .setColor('#db583e')
+    .setTitle("Oh No!")
+    .setAuthor('Autumn Bot Verification', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.webp?size=256')
+    .setDescription(`This server isn't set up with the new verification dashboard yet! Contact ${message.guild.owner.toString()} and tell them to set up the Verification Module here: https://www.autumnbot.net/dashboard`)
+    .setTimestamp();
+
+    //Testing in server
+    
     let currGuild = await getGuildInfo(message.guild.id);
+
+    let verifyModuleJSON = currGuild[0].VerifyModule;
   
+    var verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
 
-    if(currGuild[0] != undefined){
-      let verifyModule = JSON.parse(escapeSpecialChars(currGuild[0].VerifyModule));
+    if(verifyModule.enabled){
 
-      const msgChannel = message.channel.id;
-      const verifyChannel = verifyModule.VerifyChannel;
-      const modVChannel = verifyModule.MVChannel;
-      const staffRoleID = verifyModule.StaffRole;
-      const AVRoleID = verifyModule.AVRole;
-      const MemberRoleID = verifyModule.MemberRole;
-      const VerMessage = verifyModule.VMessage;
-      let a = message.author;
-      let b = message.guild;
-      let m = message.member;
-      if(msgChannel == verifyChannel && !a.bot){
-      let app = new Discord.RichEmbed()
+      var msgChannel = message.channel.id;
+      var author = message.author;
+      var member = message.member;
+      var guild = message.guild;
+
+      var userDM = client.users.cache.get(author.id);
+      
+      console.log(userDM);
+
+      //Declare Beforehand, and then set during .then()
+
+      var VerifyChannel;
+
+      await client.channels.fetch(verifyModule.VerifyChannel)
+      .then(channel => VerifyChannel = channel)
+      .catch(console.error);
+
+      var ModVerifyChannel;
+
+      await client.channels.fetch(verifyModule.MVChannel)
+      .then(channel => ModVerifyChannel = channel)
+      .catch(console.error);
+
+      var StaffRole = verifyModule.StaffRole;
+      var NonVerifiedRole = verifyModule.NonVerifiedRole;
+
+      var VerifyMessage = verifyModule.VMessage;
+
+      if(verifyModule.AVRole && msgChannel == VerifyChannel && !message.author.bot){
+        message.channel.send(setup);
+      }
+
+      if(msgChannel != verifyModule.VerifyChannel || author.bot || !message.member.roles.cache.has(NonVerifiedRole)) return;
+      if(message.member.roles.cache.has(StaffRole)) return;
+
+      const accept = client.emojis.cache.get('673092790074474527');
+      const deny = client.emojis.cache.get('673092807614791690');
+
+      var app = new Discord.MessageEmbed()
       .setColor('#b5b5b5')
       .setTitle("Awaiting Verification")
-      .setAuthor(a.tag, a.avatarURL)
+      .setAuthor(author.tag, author.avatarURL())
       .setDescription(message.content)
       .setTimestamp();
-  
-      let acceptdm =new Discord.RichEmbed()
+
+      var acceptdm = new Discord.MessageEmbed()
       .setColor('#52eb6c')
       .setTitle("Verification Application")
-      .setAuthor(b.name, b.iconURL)
-      .setDescription(VerMessage)
-      .setTimestamp();
-  
-      let denydm =new Discord.RichEmbed()
+      .setAuthor(guild.name, guild.iconURL())
+      .setDescription(VerifyMessage)
+      .setTimestamp()
+
+      var denydm = new Discord.MessageEmbed()
       .setColor('#d94a4a')
       .setTitle("Verification Application")
-      .setAuthor(b.name, b.iconURL)
-      .setDescription(`You have been denied for verification! Submit another application at <#${verifyChannel}>`)
-      .setTimestamp();
-  
-      let staffRole = message.guild.roles.get(staffRoleID);
-  
-      const accept = client.emojis.get('673092790074474527');
-      const deny = client.emojis.get('673092807614791690');
-  
-      m.addRole(AVRoleID);
-  
-      message.delete(100);
-    
-      console.log("Application Created");
-  
-      client.channels.get(modVChannel).send(app)
-        .then(function (msg) {
-          msg.react(accept).then( () =>
-            msg.react(deny)
-            );
-  
-          const filter = (reaction, user) => {
-            return [accept, deny].includes(reaction.emoji) && !user.bot;
-          }
-  
-          msg.awaitReactions(filter, {max: 1})
-            .then(collected => {
-              const reaction = collected.first();
-  
-              if(reaction.emoji === accept){
-  
-                let accepted = new Discord.RichEmbed()
-                .setColor('#52eb6c')
-                .setTitle("Accepted")
-                .setAuthor(a.tag, a.avatarURL)
-                .setDescription(message.content)
-                .setTimestamp()
-                
-                msg.edit(accepted)
-                .catch(console.error);
-  
-                msg.clearReactions();
-  
-                m.removeRole(AVRoleID);
-                m.addRole(MemberRoleID);
-  
-                a.send(acceptdm);
-              } else {
-                let denied = new Discord.RichEmbed()
-                .setColor('#d94a4a')
-                .setTitle("Denied")
-                .setAuthor(a.tag, a.avatarURL)
-                .setDescription(message.content)
-                .setTimestamp()
-  
-                msg.edit(denied)
-                .catch(console.error);
-  
-                msg.clearReactions();
-  
-                m.removeRole(AVRoleID);
-  
-                a.send(denydm);
-              }
-            })
-            client.channels.get(modVChannel).send(staffRole.toString()).then(function(msg){msg.delete()});
-            
-          })
-        }
+      .setAuthor(guild.name, guild.iconURL())
+      .setDescription(`You have been denied for verification! Submit another application at <#${verifyModule.VerifyChannel}>`)
+      .setTimestamp()
+
+      var awaitdm = new Discord.MessageEmbed()
+      .setColor('#db583e')
+      .setTitle("Verification Application")
+      .setAuthor(guild.name, guild.iconURL())
+      .setDescription(`Your verification application has been submitted for reviewal in \`${guild.name}\``)
+      .setTimestamp()
+
+      var accepted = new Discord.MessageEmbed()
+      .setColor('#52eb6c')
+      .setTitle("Accepted")
+      .setAuthor(author.tag, author.avatarURL())
+      .setDescription(`${message.content}`)
+      .setTimestamp()
+
+      var denied = new Discord.MessageEmbed()
+      .setColor('#d94a4a')
+      .setTitle("Denied")
+      .setAuthor(author.tag, author.avatarURL())
+      .setDescription(`${message.content}`)
+      .setTimestamp()
+
+      VerifyChannel.updateOverwrite(author, {VIEW_CHANNEL: false});
+
+      message.delete();
+      
+      var msg;
+
+      await ModVerifyChannel.send(app)
+      .then( message => msg = message)
+      
+      var ping;
+
+      await msg.channel.send(`<@&${StaffRole}>`)
+      .catch(console.error)
+      .then(message => ping = message);
+
+      ping.delete();
+
+      msg.react(accept).then( () =>
+        msg.react(deny)
+        );
+
+      author.send(awaitdm);
+
+      const filter = (reaction, user) => {
+        return reaction.emoji.id == "673092790074474527" && !user.bot || reaction.emoji.id == "673092807614791690" && !user.bot ;
       }
+
+      var collected;
+      await msg.awaitReactions(filter, {max: 1})
+        .then(collectedReactions => collected = collectedReactions);
+
+      const reaction = collected.first();
+
+      console.log(collected);
+
+
+      if(reaction.emoji.id == "673092790074474527"){
+        VerifyChannel.updateOverwrite(author, {VIEW_CHANNEL: null})
+        .catch(console.error);
+        member.roles.remove(NonVerifiedRole)
+        
+        msg.edit(accepted)
+        .catch(console.error);
+
+        msg.reactions.removeAll();
+
+        console.log(member)
+
+
+        author.send(acceptdm);
+      } else {
+        VerifyChannel.updateOverwrite(author, {VIEW_CHANNEL: true})
+        .catch(console.error);
+
+        msg.edit(denied)
+        .catch(console.error);
+        msg.reactions.removeAll();
+
+        author.send(denydm);
+      }
+    }
   }
   }
 );

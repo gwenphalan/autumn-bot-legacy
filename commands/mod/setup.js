@@ -44,24 +44,7 @@ module.exports = class ClassName extends commando.Command {
             details: oneLine`
             Sets up the server for use with Autumn Bot.
             `,
-            examples: ['-setup'],
-
-            args: [
-                {
-                  key: 'staffRole',
-                  label: 'Staff',
-                  prompt: 'What role is given to all staff members?',
-                  type: 'role',
-                  default: 'create'
-                },
-                {
-                  key: 'memberRole',
-                  label: 'Member',
-                  prompt: 'What role is given to verified members?',
-                  type: 'role',
-                  default: 'create'
-                }
-              ]
+            examples: ['-setup']
         })
     }
     async getGuildInfo(id)
@@ -157,7 +140,11 @@ module.exports = class ClassName extends commando.Command {
         .then(channel => channel.id)
     }
 
-    async run(msg, args) {
+    async run(msg) {
+
+        msg.channel.send("**The `-setup` command has been removed!** Go to https://www.autumnbot.net/dashboard to setup the Verification Module.")
+
+        /*
         if (!msg.member.hasPermission('ADMINISTRATOR') && msg.author.id != "279910519467671554"){
             msg.reply("You don't have the `ADMINISTRATOR` permission!").then(function (msg) { 
                 msg.delete(10000)
@@ -251,7 +238,7 @@ module.exports = class ClassName extends commando.Command {
                 
                 /*
                  *Update current channels permissions.
-                 */
+                 
         
                 const channels = msg.guild.channels.array();
         
@@ -306,6 +293,6 @@ module.exports = class ClassName extends commando.Command {
                 return;
               }
             })
-        })
+        })*/
     }
 }

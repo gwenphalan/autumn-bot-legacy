@@ -44,7 +44,7 @@ module.exports = class ClassName extends commando.Command {
             {
                 console.log(`${msg.author.username} hasVoted: ${voted}`);
     
-                const pat = new Discord.RichEmbed();
+                const pat = new Discord.MessageEmbed();
                 
                 switch (Math.round(Math.random()*5))
                 {
