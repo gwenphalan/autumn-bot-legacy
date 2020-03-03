@@ -55,7 +55,7 @@ module.exports = class ClassName extends commando.Command {
             return;
         };
         
-        const embed = new Discord.RichEmbed()
+        const embed = new Discord.MessageEmbed()
         .setColor(color)
         .setTitle(title)
         .setAuthor(msg.author.username, msg.author.avatarURL)
