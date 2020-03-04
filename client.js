@@ -1,8 +1,8 @@
-const { CommandoClient } = require('discord.js-commando');
+const commando = require('discord.js-commando');
 const sqlite = require('sqlite');
 const path = require('path');
 
-const client = new CommandoClient({
+const client = new commando.Client({
   owner: '279910519467671554',
   commandPrefix: '-',
   invite: 'https://discord.gg/DfByvyN'
