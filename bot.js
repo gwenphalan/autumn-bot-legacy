@@ -1,19 +1,13 @@
 /* eslint-disable no-console */
-const { client } = require(__dirname + "/client.js");
+const { client } = require(__dirname + "/modules/client.js");
 const Discord = require('discord.js');
 const path = require('path');
 const oneLine = require('common-tags').oneLine;
-const mysql = require('mysql');
+const con = require(__dirname + '/modules/con.js');
+const guild = require(__dirname + '/modules/con.js');
 const sqlite = require('sqlite');
 const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XjNG_w.ktL1L5yv_TPvTOlIHjgyBZXXL5k';
 const apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjU0ODQzNzM0NjIyMjExMCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTgyNTk3MzQ3fQ.AOFlwDk84YGZBAdcRHSnmNYB05adjih6GRWONTR4VJk';
-
-var con = mysql.createConnection({
-  host: "webserver3.pebblehost.com",
-  user: "autumnfo_admin",
-  password: "9p4kd%DkOw96",
-  database: "autumnfo_discordbot"
-});
 
 async function getGuildInfo(id)
 {
@@ -36,16 +30,6 @@ async function getAllGuilds()
       })
   })
 }
-
-let guild = [];
-
-con.connect(function(err) {
-    if (err) throw err;
-    con.query("SELECT * FROM guildsettings", function (err, result) {
-      if (err) throw err;
-      guild = result;
-    });
-});
 
 
 /*client.on("ready", async function(){
@@ -149,7 +133,7 @@ client.on("guildCreate", async function(guild) {
       }
   }).then(() => console.log('Status Set'));
 
-  var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${guild.id}', '{"enabled":false}')`;
+  var sql = `INSERT INTO guildsettings (Guild, VerifyModule, ModModule) VALUES ('${guild.id}', '{"enabled":false}', '{"enabled":false}')`;
   con.query(sql, function (err, result) {
   if (err) throw err;
         console.log("1 record inserted");
@@ -265,21 +249,10 @@ client.on('message', msg =>
       }
 })*/
 
-function escapeSpecialChars(jsonString) {
-  return jsonString
-    .replace(/\n/g, "\\n")
-    .replace(/\r/g, "\\r")
-    .replace(/\t/g, "\\t")
-    .replace(/\f/g, "\\f");
-
-}
-
 client.on("guildMemberAdd", async (member) =>{
-  let currGuild = await getGuildInfo(member.guild.id);
+  const guild = new Guild(message.guild.id);
 
-  let verifyModuleJSON = currGuild[0].VerifyModule;
-
-  var verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
+  var verfyModule = guild.verifyModule;
 
   console.log(verifyModule.NonVerifiedRole);
 
@@ -302,19 +275,11 @@ client.on("message", async (message) => {
 
     //Testing in server
     
-    let currGuild = await getGuildInfo(message.guild.id);
+    const guild = new Guild(message.guild.id);
 
-    if(!currGuild[0]){
-      var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${message.guild.id}', '{"enabled":false}')`;
-      con.query(sql, function (err, result) {
-      if (err) throw err;
-            console.log("1 record inserted");
-      });
-    };
-
-    let verifyModuleJSON = currGuild[0].VerifyModule;
-  
-    var verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
+    let verifyModule = guild.verifyModule;
+    
+    console.log(verifyModule);
 
     if(verifyModule.enabled){
 

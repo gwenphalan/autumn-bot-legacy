@@ -1,7 +1,7 @@
 const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
 const Discord = require('discord.js');
-const client = require('../../client');
+const client = require('../../modules/client');
 
 module.exports = class ClassName extends commando.Command {
     constructor(client) {
@@ -19,9 +19,6 @@ module.exports = class ClassName extends commando.Command {
     }
 
     async run(msg) {
-        const commands = client.registry.commands.array();
-        console.log(commands);
-    
         const help = new Discord.MessageEmbed()
             .setTitle('Help')
             .addField('<:Blank:680820567930175538>', '**Fun** [Vote For The Bot](https://top.gg/bot/672548437346222110/vote) every 12 hours to get cooler looking fun commands.')
