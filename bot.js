@@ -275,9 +275,9 @@ client.on("message", async (message) => {
 
     //Testing in server
     
-    const guild = new Guild(message.guild.id);
+    const GuildOBJ = new Guild(message.guild.id);
 
-    let verifyModule = guild.verifyModule;
+    let verifyModule = GuildOBJ.verifyModule;
     
     console.log(verifyModule);
 
