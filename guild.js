@@ -1,4 +1,4 @@
-const con = require(__dirname + '/con.js');
+const con = require(__dirname + '/db.js');
 const client = require(__dirname + "/client.js");
 
 function escapeSpecialChars(jsonString) {

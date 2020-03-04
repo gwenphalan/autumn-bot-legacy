@@ -3,8 +3,7 @@ const { client } = require(__dirname + "/client.js");
 const Discord = require('discord.js');
 const path = require('path');
 const oneLine = require('common-tags').oneLine;
-const con = require(__dirname + '/con.js');
-const Guilds = require(__dirname + '/con.js');
+const con = require(__dirname + '/db.js');
 const sqlite = require('sqlite');
 const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XjNG_w.ktL1L5yv_TPvTOlIHjgyBZXXL5k';
 const apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjU0ODQzNzM0NjIyMjExMCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTgyNTk3MzQ3fQ.AOFlwDk84YGZBAdcRHSnmNYB05adjih6GRWONTR4VJk';
@@ -30,100 +29,6 @@ async function getAllGuilds()
       })
   })
 }
-
-
-/*client.on("ready", async function(){
-  let guilds = await getAllGuilds();
-
-  let repeats = [];
-  for(var i = 0; i < guilds.length; i++){
-    let currGuild = client.guilds.get(guilds[i].Guild);
-
-    let guild = await getGuilds(currGuild.id);
-
-    
-    if(guild.length > 1){
-      for(var a = 0; a < guild.length-1; a++)
-      { 
-  
-        console.log(a+1);
-        var curGuild = guild[a+1];
-
-        var repeatsFilter = repeats.filter(function(repeat){
-          return repeat == curGuild.VerifyChannel
-        })
-  
-        if(repeatsFilter[0]){
-          console.log(curGuild.VerifyChannel + " has already been logged!")
-        }else{
-          repeats.push(curGuild.VerifyChannel);
-          console.log(curGuild.VerifyChannel + " has been logged!")
-        }
-      }
-    }
-  }
-  for(var i = 0; i < repeats.length; i++){
-    var sql = `DELETE FROM guildsettings WHERE VerifyChannel = '${repeats[i]}'`;
-    con.query(sql, function (err, result) {
-      if (err) throw err;
-      console.log(repeats[i] + " HAS BEEN DELETED!");
-    });
-  }
-});*/
-
-/*
-client.on("ready", async function(){
-  let guilds = await getAllGuilds();
-
-  console.log(guilds);
-
-  for(var i = 0; i < guilds.length; i++){
-    
-
-    var VerifyChannel = guilds[i].VerifyChannel;
-    var AVChannel = guilds[i].AVChannel;
-    var MVChannel = guilds[i].MemberRole;
-    var StaffRole = guilds[i].StaffRole;
-    var MemberRole = guilds[i].MemberRole;
-    var AVRole = guilds[i].AVRole;
-    var VMessage = guilds[i].VMessage;
-
-
-    
-
-    var VerifyModule = {
-      VerifyChannel: VerifyChannel,
-      AVChannel: AVChannel,
-      MVChannel: MVChannel,
-      StaffRole: StaffRole,
-      MemberRole: MemberRole,
-      AVRole: AVRole,
-      VMessage: VMessage,
-    }
-
-    var final = JSON.stringify(VerifyModule);
-
-    var a = 0;
-    var count = 0;
-    for(a = 0; a < JSON.stringify(VerifyModule).length; a++)
-    {
-        if(JSON.stringify(VerifyModule).charAt(a) == "'")
-        {
-            final = [final.slice(0, a+count), '\\', final.slice(a+count)].join('');
-            count++;
-
-        }
-    }
-
-    console.log(final);
-    var sql = "UPDATE guildsettings SET VerifyModule = '" + final + "' WHERE Guild = \"" + guilds[i].Guild + "\"";
-
-    con.query(sql, function (err, result) {
-      if (err) throw err;
-      console.log(result.affectedRows + " record(s) updated");
-    });
-  }
-});*/
 
 client.on("guildCreate", async function(guild) {
   await client.user.setPresence({
@@ -161,34 +66,27 @@ client.on("guildDelete", async function(guild){
   }).then(() => console.log('Status Set'));
 })
 
-/*
+
 client.on("channelCreate", async (channel) => {
   if(channel.guild){
+    let guild = new Guild(message.guild.id)
 
-    let id = channel.guild.id;
-  
-    let guildSettings = await getGuildInfo(id);
-  
-    if(guildSettings[0] == undefined)
+    let verifyModule = guild.verfyModule;
+
+    if(verifyModule.enabled = true)
     {
-      return;
-    };
-  
-    
-    let mRole;
-    await channel.guild.roles.fetch(guildSettings[0].VerfiyModule).then(() => {
-      mRole = 
-    });
-  
-    channel.overwritePermissions(channel.guild.defaultRole.id, {
+    var nonVerifiedRole;
+
+    await message.guild.roles.fetch(verifyModule.NonVerifiedRole)
+    .then(role => nonVerifiedRole = role)
+    .catch(console.error);
+
+    channel.overwritePermissions(channel.NonVerifiedRole, {
       VIEW_CHANNEL: false
     });
-  
-    channel.overwritePermissions(mRole, {
-      VIEW_CHANNEL: true
-    });
+    }
   }
-});*/
+});
 
 function getAttachment(msg){
   try{
