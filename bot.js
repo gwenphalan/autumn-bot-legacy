@@ -64,7 +64,7 @@ client.on("guildDelete", async function(guild){
           type: "LISTENING",
       }
   }).then(() => console.log('Status Set'));
-})
+});
 
 
 client.on("channelCreate", async (channel) => {
@@ -81,7 +81,7 @@ client.on("channelCreate", async (channel) => {
     .then(role => nonVerifiedRole = role)
     .catch(console.error);
 
-    channel.overwritePermissions(channel.NonVerifiedRole, {
+    channel.overwritePermissions(NonVerifiedRole, {
       VIEW_CHANNEL: false
     });
     }
