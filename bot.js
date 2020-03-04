@@ -281,8 +281,6 @@ client.on("guildMemberAdd", async (member) =>{
 
   var verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
 
-  console.log(verifyModule.NonVerifiedRole);
-
   if(verifyModule.enabled){
     var nonVerifiedRole = verifyModule.NonVerifiedRole;
 
