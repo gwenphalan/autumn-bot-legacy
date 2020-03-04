@@ -20,6 +20,7 @@ module.exports = class ClassName extends commando.Command {
 
     async run(msg) {
         const commands = client.commands;
+        console.log(commands);
     
         const help = new Discord.MessageEmbed()
             .setTitle('Help')
