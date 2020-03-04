@@ -324,8 +324,6 @@ client.on("message", async (message) => {
       var guild = message.guild;
 
       var userDM = client.users.cache.get(author.id);
-      
-      console.log(userDM);
 
       //Declare Beforehand, and then set during .then()
 
@@ -431,8 +429,6 @@ client.on("message", async (message) => {
 
       const reaction = collected.first();
 
-      console.log(collected);
-
 
       if(reaction.emoji.id == "673092790074474527"){
         VerifyChannel.updateOverwrite(author, {VIEW_CHANNEL: null})
@@ -443,8 +439,6 @@ client.on("message", async (message) => {
         .catch(console.error);
 
         msg.reactions.removeAll();
-
-        console.log(member)
 
 
         author.send(acceptdm);
