@@ -1,5 +1,6 @@
 const { CommandoClient } = require('discord.js-commando');
 const sqlite = require('sqlite');
+const path = require('path');
 
 const client = new CommandoClient({
   owner: '279910519467671554',
