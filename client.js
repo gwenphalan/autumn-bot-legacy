@@ -81,4 +81,4 @@ client.registry
 
 client.login(token);
 
-exports.client = client;
+modules.exports = client;

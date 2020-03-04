@@ -60,6 +60,6 @@ class Guild
   }
 }
 
-exports.guild = {
+modules.exports = {
   Guild: Guild
 }
