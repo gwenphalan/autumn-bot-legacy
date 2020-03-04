@@ -69,7 +69,7 @@ module.exports = class ClassName extends commando.Command {
 
         }else{
         
-            channel.fetchMessages({around: messageId, limit: 1})
+            channel.messages.fetch({around: messageId, limit: 1})
                 .then(msg => {
                 const fetchedMsg = msg.first();
                 fetchedMsg.edit(embed);
