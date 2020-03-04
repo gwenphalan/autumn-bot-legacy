@@ -297,7 +297,7 @@ client.on("message", async (message) => {
     .setColor('#db583e')
     .setTitle("Oh No!")
     .setAuthor('Autumn Bot Verification', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.webp?size=256')
-    .setDescription(`This server isn't set up with the new verification dashboard yet! Contact ${message.guild.owner.toString()} and tell them to set up the Verification Module here: https://www.autumnbot.net/dashboard`)
+    .setDescription(`This server isn't set up with the new verification dashboard yet! Contact ${message.guild.owner} and tell them to set up the Verification Module here: https://www.autumnbot.net/dashboard`)
     .setTimestamp();
 
     //Testing in server
@@ -344,12 +344,12 @@ client.on("message", async (message) => {
 
       var VerifyMessage = verifyModule.VMessage;
 
-      if(verifyModule.AVRole && msgChannel == VerifyChannel && !message.author.bot){
-        message.channel.send(setup);
-      }
-
       if(msgChannel != verifyModule.VerifyChannel || author.bot || !message.member.roles.cache.has(NonVerifiedRole)) return;
       if(message.member.roles.cache.has(StaffRole)) return;
+      
+      if(verifyModule.AVRole && msgChannel == VerifyChannel && !message.author.bot){
+        message.channel.send(setup);
+      };
 
       const accept = client.emojis.cache.get('673092790074474527');
       const deny = client.emojis.cache.get('673092807614791690');
