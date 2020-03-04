@@ -17,8 +17,8 @@ var con = mysql.createConnection({
 const client = new commando.Client({
   owner: '279910519467671554',
   commandPrefix: '-',
-  unknownCommandResponse: false,
-  invite: 'https://discord.gg/DfByvyN'
+  invite: 'https://discord.gg/DfByvyN',
+  unknownCommandResponse: false
 });
 
 async function getGuildInfo(id)
