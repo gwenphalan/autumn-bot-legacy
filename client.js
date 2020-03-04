@@ -79,4 +79,4 @@ client.registry
 
 client.login(token);
 
-module.exports client;
+Module.exports client;
