@@ -8,7 +8,7 @@ const client = new CommandoClient({
   invite: 'https://discord.gg/DfByvyN'
 });
 
-const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XjNG_w.ktL1L5yv_TPvTOlIHjgyBZXXL5k';
+const token = 'NjczNDI0MTkzODYxMTg5NjYx.Xl-2dQ.qtGlbtkjRAV1ujV9kShpUkgnNjU';
 
 client.setProvider(
   sqlite.open(path.join(__dirname, 'database.sqlite3')).then(db => new commando.SQLiteProvider(db))

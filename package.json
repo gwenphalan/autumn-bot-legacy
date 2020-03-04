@@ -15,6 +15,7 @@
 		"discord.js-commando-mysqlprovider": "^0.1.0",
 		"fs": "0.0.1-security",
 		"mysql": "^2.18.1",
+		"nodemon": "^2.0.2",
 		"request": "^2.88.0",
 		"sqlite": "^2.9.3"
 	}
