@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
-const { client } = require(__dirname + "/custom-modules/client.js");
+const { client } = require(__dirname + "/client.js");
 const Discord = require('discord.js');
 const path = require('path');
 const oneLine = require('common-tags').oneLine;
-const con = require(__dirname + '/custom-modules/con.js');
-const Guilds = require(__dirname + '/custom-modules/con.js');
+const con = require(__dirname + '/con.js');
+const Guilds = require(__dirname + '/con.js');
 const sqlite = require('sqlite');
 const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XjNG_w.ktL1L5yv_TPvTOlIHjgyBZXXL5k';
 const apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjU0ODQzNzM0NjIyMjExMCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTgyNTk3MzQ3fQ.AOFlwDk84YGZBAdcRHSnmNYB05adjih6GRWONTR4VJk';
