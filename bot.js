@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const commando = require('discord.js-commando');
+const { CommandoClient } = require('discord.js-commando');
 const Discord = require('discord.js')
 const path = require('path');
 const oneLine = require('common-tags').oneLine;
@@ -14,7 +14,7 @@ var con = mysql.createConnection({
   password: "9p4kd%DkOw96",
   database: "autumnfo_discordbot"
 });
-const client = new commando.Client({
+const client = new CommandoClient({
   owner: '279910519467671554',
   commandPrefix: '-',
   invite: 'https://discord.gg/DfByvyN',
