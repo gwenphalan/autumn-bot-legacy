@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-const { CommandoClient } = require('discord.js-commando');
-const Discord = require('discord.js')
+const { client } = require(__dirname + "/client.js");
+const Discord = require('discord.js');
 const path = require('path');
 const oneLine = require('common-tags').oneLine;
 const mysql = require('mysql');
@@ -13,12 +13,6 @@ var con = mysql.createConnection({
   user: "autumnfo_admin",
   password: "9p4kd%DkOw96",
   database: "autumnfo_discordbot"
-});
-const client = new CommandoClient({
-  owner: '279910519467671554',
-  commandPrefix: '-',
-  invite: 'https://discord.gg/DfByvyN',
-  unknownCommandResponse: false
 });
 
 async function getGuildInfo(id)
@@ -164,7 +158,7 @@ client.on("guildCreate", async function(guild) {
   let welcome = new Discord.MessageEmbed()
   .setColor('#db583e')
   .setTitle('Thank you for inviting me to your server!')
-  .setDescription('Do `-help` for a list of commands.\n\nFor information on setting up the verification function, do `-info`.\n\nIf you need any support, visit [this server](https://discord.gg/tbUuhB7).');
+  .setDescription('Do `-help` for a list of commands\n\nGo to https://www.autumnbot.net/dashboard to set up the bot. Visit [this server](https://discord.gg/tbUuhB7) if you need any help.');
   guild.owner.send(welcome);
 });
 
@@ -271,62 +265,6 @@ client.on('message', msg =>
       }
 })*/
 
-client.on("ready", () => {
-  console.log("Loading...");
-  let interval = setInterval(() => {
-    if (typeof database !== "object" || typeof guilds !== "object") return;
-    console.log("I'm online!");
-    clearInterval(interval);
-  }, 100);
-});
-
-client
-  .on('error', console.error)
-  .on('warn', console.warn)
-  .on('debug', console.log)
-  .on('ready', async function(){
-    client.user.setStatus('available')
-    await client.user.setPresence({
-        activity: {
-            name: client.guilds.cache.size + ' servers | -news',
-            type: "LISTENING",
-        }
-    }).then(() => console.log('Status Set'));
-    console.log(`Client ready; logged in as ${client.user.username}#${client.user.discriminator} (${client.user.id})`);
-  })
-  .on('disconnect', () => { console.warn('Disconnected!'); })
-  .on('reconnecting', () => { console.warn('Reconnecting...'); })
-  .on('commandError', (cmd, err) => {
-    if (err instanceof commando.FriendlyError) return;
-    console.error(`Error in command ${cmd.groupID}:${cmd.memberName}`, err);
-  })
-  .on('commandBlocked', (msg, reason) => {
-    console.log(oneLine`
-			Command ${msg.command ? `${msg.command.groupID}:${msg.command.memberName}` : ''}
-			blocked; ${reason}
-		`);
-  })
-  .on('commandPrefixChange', (guild, prefix) => {
-    console.log(oneLine`
-			Prefix ${prefix === '' ? 'removed' : `changed to ${prefix || 'the default'}`}
-			${guild ? `in guild ${guild.name} (${guild.id})` : 'globally'}.
-		`);
-  })
-  .on('commandStatusChange', (guild, command, enabled) => {
-    console.log(oneLine`
-			Command ${command.groupID}:${command.memberName}
-			${enabled ? 'enabled' : 'disabled'}
-			${guild ? `in guild ${guild.name} (${guild.id})` : 'globally'}.
-		`);
-  })
-  .on('groupStatusChange', (guild, group, enabled) => {
-    console.log(oneLine`
-			Group ${group.id}
-			${enabled ? 'enabled' : 'disabled'}
-			${guild ? `in guild ${guild.name} (${guild.id})` : 'globally'}.
-		`);
-  });
-
 function escapeSpecialChars(jsonString) {
   return jsonString
     .replace(/\n/g, "\\n")
@@ -335,10 +273,6 @@ function escapeSpecialChars(jsonString) {
     .replace(/\f/g, "\\f");
 
 }
-
-client.setProvider(
-  sqlite.open(path.join(__dirname, 'database.sqlite3')).then(db => new commando.SQLiteProvider(db))
-).catch(console.error);
 
 client.on("guildMemberAdd", async (member) =>{
   let currGuild = await getGuildInfo(member.guild.id);
@@ -528,17 +462,3 @@ client.on("message", async (message) => {
   }
   }
 );
-
-
-
-
-client.registry
-  .registerGroup('mod', 'Mod')
-  .registerGroup('fun', 'Fun')
-  .registerDefaultGroups()
-  .registerDefaultTypes()
-  .registerDefaultCommands({ help: false, eval: false })
-  .registerTypesIn(path.join(__dirname, 'types'))
-  .registerCommandsIn(path.join(__dirname, 'commands'));
-
-client.login(token);
