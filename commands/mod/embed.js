@@ -58,7 +58,7 @@ module.exports = class ClassName extends commando.Command {
         const embed = new Discord.MessageEmbed()
         .setColor(color)
         .setTitle(title)
-        .setAuthor(msg.author.username, msg.author.avatarURL)
+        .setAuthor(msg.author.username, msg.author.avatarURL())
         .setDescription(desc);
 
         if(messageId === "new"){
