@@ -61,7 +61,7 @@ client.on("channelCreate", async (channel) => {
         },
       ]);
 
-    console.log(`\u001b[32mVerifyModule Log\u001B[37m -- \u001b[31mUpdated Channel \u001B[37m\n--------\n    Channel: \u001B[36m#${channel.name} \n\u001B[37m    ID: \u001B[34m${channel.id}\u001B[37m \n    Server \u001B[36m${GuildOBJ.info.name}\u001B[37m\n--------`);
+    console.log(`\u001b[32mVerifyModule Log\u001B[37m -- \u001b[31mUpdated Channel \u001B[37m\n--------\n    Channel: \u001B[36m#${channel.name} \n\u001B[37m    ID: \u001B[34m${channel.id}\u001B[37m \n    Server: \u001B[36m${GuildOBJ.info.name}\u001B[37m\n--------`);
     }
   }
 });
@@ -77,25 +77,21 @@ client.on("guildMemberAdd", async (member) => {
     var nonVerifiedRole = verifyModule.NonVerifiedRole;
 
     member.roles.add(nonVerifiedRole);
-
-    console.log(`\u001B[32mVerifyModule\u001B[37m: Updated User For \u001B[36m@${member.username}${member.tag}\u001B[37m(ID: \u001B[34m${channel.id}\u001B[37m) for server \u001B[36m${GuildOBJ.info.name}`);
   }
 })
 
 client.on("message", async (message) => {
   if (message.guild) {
     var setup = new Discord.MessageEmbed()
-    .setColor('#db583e')
-    .setTitle("Oh No!")
-    .setAuthor('Autumn Bot Verification', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.webp?size=256')
-    .setDescription(`This server isn't set up with the new verification dashboard yet! Contact ${message.guild.owner} and tell them to set up the Verification Module here: https://www.autumnbot.net/dashboard`)
-    .setTimestamp();
+      .setColor('#db583e')
+      .setTitle("Oh No!")
+      .setAuthor('Autumn Bot Verification', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.webp?size=256')
+      .setDescription(`This server isn't set up with the new verification dashboard yet! Contact ${message.guild.owner} and tell them to set up the Verification Module here: https://www.autumnbot.net/dashboard`)
+      .setTimestamp();
 
     const GuildOBJ = new Guild(message.guild.id);
 
     let verifyModule = await GuildOBJ.verifyModule();
-
-    console.log("Verify Module: " + verifyModule);
 
     if (verifyModule.enabled) {
 
@@ -185,6 +181,7 @@ client.on("message", async (message) => {
 
       const reaction = collected.first();
 
+      console.log(collected);
 
 
       if (reaction.emoji.id == "673092790074474527") {
