@@ -98,55 +98,6 @@ function getAttachment(msg){
   }
 }
 
-/*
-client.on('message', msg => 
-{
-
-  var attachments = msg.attachments.first();
-
-  const errorImage = new Discord.RichEmbed()
-    .setColor('#ff6666')
-    .setDescription('Your submission did not have an image!')
-    .setTitle('SUBMISSION ERROR');
-
-    const errorContent = new Discord.RichEmbed()
-      .setColor('#ff6666')
-      .setDescription('Your submission did not have a description!')
-      .setTitle('SUBMISSION ERROR');//
-
-      if(msg.channel.id == '674369829179752482' && !msg.author.bot /*|| msg.channel.id == '673092933695832084' && !msg.author.bot)
-      {
-        //msg.channel.send('URL: ' + getAttachment(msg));
-        if(attachments == undefined){
-          msg.author.send(errorImage);
-          msg.delete();
-          return;
-        }
-
-        if(msg.content == undefined){
-          msg.author.send(errorContent);
-          msg.delete();
-          return;
-        }
-
-        var img = getAttachment(msg);
-        var submission = new Discord.RichEmbed()
-          .setColor('#faff66')
-          .setTitle('Submission')
-          .setAuthor(msg.author.tag, msg.author.avatarURL())
-          .setDescription(msg.content)
-          .setImage(img)
-  
-          client.channels.fetch('674369842375295016').send(submission)
-          .then(function(msg){
-            msg.react(client.emojis.get('674382678312615955'))
-          });
-          msg.delete(500);
-          msg.member.roles.add('674368716284100634');
-          return;
-      }
-})*/
-
 client.on("guildMemberAdd", async (member) =>{
   const guild = new Guild(message.guild.id);
 

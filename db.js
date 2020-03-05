@@ -12,4 +12,4 @@ con.connect(function(err) {
     console.log('CONNECTED TO DATABASE')
 });
 
-exports.db = con; 
+modules.exports = con; 

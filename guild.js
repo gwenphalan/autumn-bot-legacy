@@ -10,9 +10,20 @@ function escapeSpecialChars(jsonString) {
 
 }
 
-class Guild
+async function getGuildInfo(id)
 {
-  constructor(guildID)
+  return new Promise((resolve, reject) => {
+    con.query(
+      "SELECT * FROM guildsettings WHERE Guild = '" + id + "' LIMIT 1", 
+      (err, result) => {
+        return err ? reject(err) : resolve(result);
+      })
+  })
+}
+
+module.exports = class Guild
+{
+  constructor (guildID)
   {
     this.guildID = guildID;
   }
@@ -22,44 +33,29 @@ class Guild
     return client.guilds.find(guild => guild.id === this.guildID);
   }
   
-  async getVerifyModule()
+  async verifyModule()
   {
-    return(async() => {
-    let guild = await this.getGuildInfo()
+    
+    let guild = await getGuildInfo(this.guildID)
 
     let verifyModuleJSON = guild[0].VerifyModule;
 
     let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
     
     return verifyModule;
-    })
   }
   
   async modModule()
   {
-    return(async() => {
-    let guild = await this.getGuildInfo()
+    
+    let guild = await getGuildInfo(this.guildID)
+
+    console.log(guild);
 
     let modModuleJSON = guild[0].ModModule;
 
     let modModule = JSON.parse(escapeSpecialChars(modModuleJSON));
     
     return modModule;
-    })
   }
-  
-  async getGuildInfo()
-  {
-    return new Promise((resolve, reject) => {
-      con.query(
-        "SELECT * FROM guildsettings WHERE Guild = '" + this.guildID + "' LIMIT 1", 
-        (err, result) => {
-          return err ? reject(err) : resolve(result);
-        })
-    })
-  }
-}
-
-exports.guild = {
-  Guild: Guild
 }
