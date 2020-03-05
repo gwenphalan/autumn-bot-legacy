@@ -87,15 +87,24 @@ module.exports = class ClassName extends commando.Command {
                         break;
                 }
                 
-                switch (Math.round(Math.random()*2))
+                switch (Math.round(Math.random()*5))
                 {
                     case 0: 
                         pat.setThumbnail('http://www.autumnbot.net/images/pat.png');
                         break;
                     case 1: 
+                        pat.setThumbnail('http://www.autumnbot.net/images/pat.png');
+                        break;
+                    case 2: 
                         pat.setThumbnail('http://www.autumnbot.net/images/pat1.png');
                         break;
-                    case 2:
+                    case 3: 
+                        pat.setThumbnail('http://www.autumnbot.net/images/pat1.png');
+                        break;
+                    case 4:
+                        pat.setThumbnail('http://www.autumnbot.net/images/pat2.png');
+                        break;
+                    case 5:
                         pat.setThumbnail('http://www.autumnbot.net/images/pat2.png');
                         break;
                 }
