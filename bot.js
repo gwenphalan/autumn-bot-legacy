@@ -61,7 +61,7 @@ client.on("channelCreate", async (channel) => {
         },
       ]);
 
-    console.log(`\u001b[32mVerifyModule Log\u001B[37m -- \u001b[31mUpdated Channel \u001B[37m\n--------\n    Channel: \u001B[36m#${channel.name} \n\u001B[37m    ID: \u001B[34m${channel.id}\u001B[37m \n    Server \u001B[36m${GuildOBJ.info.name}\u001B[37m\n--------`);
+    console.log(`VerifyModule Log -- Updated Channel\n--------\n    Channel: m#${channel.name}\n    ID: ${channel.id}\n    Server ${GuildOBJ.info.name}\n--------`);
     }
   }
 });
@@ -78,7 +78,7 @@ client.on("guildMemberAdd", async (member) => {
 
     member.roles.add(nonVerifiedRole);
 
-    console.log(`\u001B[32mVerifyModule\u001B[37m: Updated User For \u001B[36m@${member.username}${member.tag}\u001B[37m(ID: \u001B[34m${channel.id}\u001B[37m) for server \u001B[36m${GuildOBJ.info.name}`);
+    console.log(`VerifyModule Log -- Updated Roles\n--------\n    RoleID: ${nonVerifiedRole} User: @${member.username}#${member.tag}\n    ID: ${channel.id}Server m${GuildOBJ.info.name}`);
   }
 })
 
