@@ -22,7 +22,7 @@ module.exports = class UserInfoCommand extends commando.Command {
       ]
     });
   }
-
+  
   async run(msg, args) {
     const member = args.member;
     const user = member.user;
