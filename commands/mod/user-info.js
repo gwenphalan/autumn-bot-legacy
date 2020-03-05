@@ -22,7 +22,7 @@ module.exports = class UserInfoCommand extends commando.Command {
       ]
     });
   }
-
+  
   async run(msg, args) {
     const member = args.member;
     const user = member.user;
@@ -30,7 +30,7 @@ module.exports = class UserInfoCommand extends commando.Command {
 			Info on **${user.username}#${user.discriminator}** (ID: ${user.id})
 			**❯ Member Details**
 			${member.nickname !== null ? ` • Nickname: ${member.nickname}` : ' • No nickname'}
-			 • Roles: ${member.roles.map(roles => `\`${roles.name}\``).join(', ')}
+			 • Roles: ${member.roles.cache.map(roles => `\`${roles.name}\``).join(', ')}
 			 • Joined at: ${member.joinedAt}
 			**❯ User Details**
 			 • Created at: ${user.createdAt}${user.bot ? '\n • Is a bot account' : ''}

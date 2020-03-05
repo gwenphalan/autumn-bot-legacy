@@ -1,5 +1,5 @@
 const con = require(__dirname + '/db.js');
-const client = require(__dirname + "/client.js");
+const { client } = require(__dirname + "/client.js");
 
 function escapeSpecialChars(jsonString) {
   return jsonString
@@ -30,13 +30,12 @@ module.exports = class Guild
   
   get info()
   {
-    return client.guilds.find(guild => guild.id === this.guildID);
+    return client.guilds.cache.get(this.guildID);
   }
   
   async verifyModule()
   {
-    
-    let guild = await getGuildInfo(this.guildID)
+    let guild = await getGuildInfo(this.guildID);
 
     let verifyModuleJSON = guild[0].VerifyModule;
 
@@ -48,9 +47,7 @@ module.exports = class Guild
   async modModule()
   {
     
-    let guild = await getGuildInfo(this.guildID)
-
-    console.log(guild);
+    let guild = await getGuildInfo(this.guildID);
 
     let modModuleJSON = guild[0].ModModule;
 
