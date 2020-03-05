@@ -108,9 +108,30 @@ module.exports = class ClassName extends commando.Command {
                         pat.setThumbnail('http://www.autumnbot.net/images/pat2.png');
                         break;
                 }
+                
+                if(targetUser.id == '672548437346222110')
+                {
+                    switch (Math.round(Math.random()*4))
+                    {
+                        case 0:
+                            pat.setDescription(`**${name1}** patted my head! :flushed:`);
+                            break;
+                        case 1: 
+                            pat.setDescription(`I got a headpat from **${name1}**! Does that mean we're dating now...?`);
+                            break;
+                        case 2: 
+                            pat.setDescription(`**${name1}** headpat me... I've never felt these kinds of emotions before!`);
+                            break;
+                        case 3:
+                            pat.setDescription(`**${name1}** gave me headpats!`);
+                            break;
+                        case 4:
+                            pat.setDescription(`Thank you for the headpats, **${name1}**!`);
+                            break;
+                    }
+                }
     
                 msg.channel.send(pat);
-                msg.delete(30);
             }
             else
             {
@@ -122,36 +143,13 @@ module.exports = class ClassName extends commando.Command {
                 if(chance == 1)
                 {
                     msg.channel.send("**" + name1 + "** patted **" + name2 + "**'s head!\n\nVote for the bot at https://top.gg/bot/672548437346222110/vote to spice up this command. :eyes:")
-                    msg.delete(30);
                 }
                 else
                 {
                     msg.channel.send("**" + name1 + "** patted **" + name2 + "**'s head!")
-                    msg.delete(30);
                 }
             }
-                
-            if(targetUser.id == '672548437346222110')
-            {
-                switch (Math.round(Math.random()*4))
-                {
-                    case 0:
-                        pat.setDescription(`**${name1}** patted my head! :flushed:`);
-                        break;
-                    case 1: 
-                        pat.setDescription(`I got a headpat from **${name1}**! Does that mean we're dating now...?`);
-                        break;
-                    case 2: 
-                        pat.setDescription(`**${name1}** headpat me... I've never felt these kinds of emotions before!`);
-                        break;
-                    case 3:
-                        pat.setDescription(`**${name1}** gave me headpats!`);
-                        break;
-                    case 4:
-                        pat.setDescription(`Thank you for the headpats, **${name1}**!`);
-                        break;
-                }
-            }
+        msg.delete();
         })
     }
 }
