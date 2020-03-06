@@ -71,8 +71,6 @@ client.on("guildMemberAdd", async (member) => {
 
   var verifyModule = await GuildOBJ.verifyModule();
 
-  console.log(verifyModule.NonVerifiedRole);
-
   if (verifyModule.enabled) {
     var nonVerifiedRole = verifyModule.NonVerifiedRole;
 
@@ -121,7 +119,7 @@ client.on("message", async (message) => {
 
       if (verifyModule.AVRole && msgChannel == VerifyChannel && !message.author.bot) {
         message.channel.send(setup);
-      };
+      }
 
       if (msgChannel != verifyModule.VerifyChannel || author.bot || !message.member.roles.cache.has(NonVerifiedRole)) return;
       if (message.member.roles.cache.has(StaffRole)) return;
@@ -180,8 +178,6 @@ client.on("message", async (message) => {
         .then(collectedReactions => collected = collectedReactions);
 
       const reaction = collected.first();
-
-      console.log(collected);
 
 
       if (reaction.emoji.id == "673092790074474527") {
