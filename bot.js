@@ -12,7 +12,7 @@ client.on("guildCreate", async function (guild) {
     }
   }).then(() => console.log('Status Set'));
 
-  var sql = `INSERT INTO guildsettings (Guild, VerifyModule, ModModule) VALUES ('${guild.id}', '{"enabled":false}', '{"enabled":false}')`;
+  var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${guild.id}', '{"enabled":false}')`;
   con.query(sql, function (err, result) {
     if (err) throw err;
     console.log("1 record inserted");
@@ -47,7 +47,7 @@ client.on("channelCreate", async (channel) => {
 
     let verifyModule = await GuildOBJ.verifyModule();
 
-    if (verifyModule.enabled = true) {
+    if (verifyModule.enabled == true) {
       var nonVerifiedRole;
 
       await channel.guild.roles.fetch(verifyModule.NonVerifiedRole)
