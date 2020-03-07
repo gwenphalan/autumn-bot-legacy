@@ -50,19 +50,21 @@ module.exports = class ClassName extends commando.Command {
 
         var noProfile = new Discord.MessageEmbed()
         .setTitle('Oh No!')
-        .addField('Pronouns',profile.pronouns, true)
         .setColor(`#db583e`)
+        
 
         if(targetUser == 'none')
         { 
             noProfile.setDescription(`You don't have a profile! You can set one up at https://www.autumnbot.net/profile`)
-            var profileInfo = await this.getProfile(msg.author.id);
+            var user = msg.author.id;
         }
         else
         {
             noProfile.setDescription(`${targetUser} doesn't have a profile! They can set one up at https://www.autumnbot.net/profile`)
-            var profileInfo = await this.getProfile(targetUser.id);
+            var user = targetUser.id;
         }
+
+        var profileInfo = await this.getProfile(user);
         
         if(!profileInfo)
         {
