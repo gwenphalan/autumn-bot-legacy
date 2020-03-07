@@ -80,7 +80,7 @@ module.exports = class ClassName extends commando.Command {
         .addField('Pronouns',profile.pronouns, true)
         .setColor(`#${profile.color}`)
         .setThumbnail(`https://cdn.discordapp.com/avatars/${profile.userID}/${profile.avatar}.png?size=512`)
-        .setURL(`https://www.autumnbot.net/profile/${targetUser.id}`)
+        .setURL(`https://www.autumnbot.net/profile/${profile.userID}`)
 
         if(profile.age != '')
         {
