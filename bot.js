@@ -12,7 +12,7 @@ client.on("guildCreate", async function (guild) {
     }
   }).then(() => console.log('Status Set'));
 
-  var sql = `INSERT INTO guildsettings (Guild, VerifyModule, ModModule) VALUES ('${guild.id}', '{"enabled":false}', '{"enabled":false}')`;
+  var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${guild.id}', '{"enabled":false}')`;
   con.query(sql, function (err, result) {
     if (err) throw err;
     console.log("1 record inserted");
@@ -47,7 +47,7 @@ client.on("channelCreate", async (channel) => {
 
     let verifyModule = await GuildOBJ.verifyModule();
 
-    if (verifyModule.enabled = true) {
+    if (verifyModule.enabled == true) {
       var nonVerifiedRole;
 
       await channel.guild.roles.fetch(verifyModule.NonVerifiedRole)
@@ -71,14 +71,10 @@ client.on("guildMemberAdd", async (member) => {
 
   var verifyModule = await GuildOBJ.verifyModule();
 
-  console.log(verifyModule.NonVerifiedRole);
-
   if (verifyModule.enabled) {
     var nonVerifiedRole = verifyModule.NonVerifiedRole;
 
     member.roles.add(nonVerifiedRole);
-
-    console.log(`VerifyModule Log -- Updated Roles\n--------\n    RoleID: ${nonVerifiedRole} User: @${member.username}#${member.tag}\n    ID: ${channel.id}Server m${GuildOBJ.info.name}`);
   }
 })
 
@@ -88,14 +84,12 @@ client.on("message", async (message) => {
       .setColor('#db583e')
       .setTitle("Oh No!")
       .setAuthor('Autumn Bot Verification', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.webp?size=256')
-      .setDescription(`This server isn't set up with the new verification dashboard yet! Contact ${message.guild.owner.toString()} and tell them to set up the Verification Module here: https://www.autumnbot.net/dashboard`)
+      .setDescription(`This server isn't set up with the new verification dashboard yet! Contact ${message.guild.owner} and tell them to set up the Verification Module here: https://www.autumnbot.net/dashboard`)
       .setTimestamp();
 
     const GuildOBJ = new Guild(message.guild.id);
 
     let verifyModule = await GuildOBJ.verifyModule();
-
-    console.log("Verify Module: " + verifyModule);
 
     if (verifyModule.enabled) {
 
@@ -105,8 +99,6 @@ client.on("message", async (message) => {
       var guild = message.guild;
 
       var userDM = client.users.cache.get(author.id);
-
-      console.log(userDM);
 
       var VerifyChannel;
 
@@ -187,8 +179,6 @@ client.on("message", async (message) => {
 
       const reaction = collected.first();
 
-      console.log(collected);
-
 
       if (reaction.emoji.id == "673092790074474527") {
         VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
@@ -199,7 +189,6 @@ client.on("message", async (message) => {
           .catch(console.error);
         msg.reactions.removeAll();
 
-        console.log(member)
 
         author.send(acceptdm);
       } else {

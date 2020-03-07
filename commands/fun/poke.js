@@ -141,8 +141,7 @@ module.exports = class ClassName extends commando.Command {
                     msg.channel.send("**" + name1 + "** poked **" + name2 + "**!")
                 }
             }
-          msg.delete()
-            .then(msg => console.log(`Poke Command\n-----\nDeleted Message By User ${message.author.username}\n-----`))
+          msg.delete();
         })
     }
 }

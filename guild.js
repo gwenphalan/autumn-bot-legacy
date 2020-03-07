@@ -36,6 +36,8 @@ module.exports = class Guild
   async verifyModule()
   {
     let guild = await getGuildInfo(this.guildID);
+    
+    if(!guild[0]) return null;
 
     let verifyModuleJSON = guild[0].VerifyModule;
 
@@ -46,8 +48,9 @@ module.exports = class Guild
   
   async modModule()
   {
-    
     let guild = await getGuildInfo(this.guildID);
+    
+    if(!guild[0]) return null;
 
     let modModuleJSON = guild[0].ModModule;
 

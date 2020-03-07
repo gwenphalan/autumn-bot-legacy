@@ -123,7 +123,6 @@ module.exports = class ClassName extends commando.Command {
                 }
 
                 msg.channel.send(hug);
-                msg.delete(30);
             }
             else
             {
@@ -135,14 +134,13 @@ module.exports = class ClassName extends commando.Command {
                 if(chance == 1)
                 {
                     msg.channel.send("**" + name1 + "** hugged **" + name2 + "**!\n\nVote for the bot at https://top.gg/bot/672548437346222110/vote to spice up this command. :eyes:")
-                    msg.delete(30);
                 }
                 else
                 {
                     msg.channel.send("**" + name1 + "** hugged **" + name2 + "**!")
-                    msg.delete(30);
                 }
             }
+          msg.delete();
         })
     }
 }
