@@ -20,7 +20,8 @@ module.exports = class ClassName extends commando.Command {
                   key: 'targetUser',
                   label: 'User',
                   prompt: 'Who\'s profile would you like to view?',
-                  type: 'user'
+                  type: 'user',
+                  default: 'none'
                 }
               ]
         })
@@ -46,11 +47,26 @@ module.exports = class ClassName extends commando.Command {
     }
 
     async run(msg, { targetUser }) {
-        var profileInfo = await this.getProfile(targetUser.id);
+
+        var noProfile = new Discord.MessageEmbed()
+        .setTitle('Oh No!')
+        .addField('Pronouns',profile.pronouns, true)
+        .setColor(`#db583e`)
+
+        if(targetUser == 'none')
+        { 
+            noProfile.setDescription(`You don't have a profile! You can set one up at https://www.autumnbot.net/profile`)
+            var profileInfo = await this.getProfile(msg.author.id);
+        }
+        else
+        {
+            noProfile.setDescription(`${targetUser} doesn't have a profile! They can set one up at https://www.autumnbot.net/profile`)
+            var profileInfo = await this.getProfile(targetUser.id);
+        }
         
         if(!profileInfo)
         {
-            msg.channel.send(`${targetUser} does not have a profile!`);
+            msg.channel.send(noProfile);
             msg.delete();
             return;
         }
