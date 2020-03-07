@@ -70,7 +70,7 @@ module.exports = class ClassName extends commando.Command {
         }
         if(profile.gender != '')
         {
-            profileEmbed.addField('Age',profile.gender,true)
+            profileEmbed.addField('Gender',profile.gender,true)
         }
 
         msg.channel.send(profileEmbed);
