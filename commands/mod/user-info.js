@@ -26,16 +26,22 @@ module.exports = class UserInfoCommand extends commando.Command {
   async run(msg, args) {
     const member = args.member;
     const user = member.user;
-    return msg.reply(stripIndents`
-			Info on **${user.username}#${user.discriminator}** (ID: ${user.id})
-			**❯ Member Details**
-			${member.nickname !== null ? ` • Nickname: ${member.nickname}` : ' • No nickname'}
-			 • Roles: ${member.roles.cache.map(roles => `\`${roles.name}\``).join(', ')}
-			 • Joined at: ${member.joinedAt}
-			**❯ User Details**
-			 • Created at: ${user.createdAt}${user.bot ? '\n • Is a bot account' : ''}
-			 • Status: ${user.presence.status}
-			 • Game: ${user.presence.game ? user.presence.game.name : 'None'}
-		`);
+
+    const userInfo = new Discord.MessageEmbed()
+        .setTitle(`Info on **${user.username}#${user.discriminator}** (ID: ${user.id})`)
+        .setDescription(stripIndents`
+        **❯ Member Details**
+        ${member.nickname !== null ? ` • Nickname: ${member.nickname}` : ' • No nickname'}
+         • Roles: ${member.roles.cache.map(roles => `\`${roles.name}\``).join(', ')}
+         • Joined at: ${member.joinedAt}
+        **❯ User Details**
+         • Created at: ${user.createdAt}${user.bot ? '\n • Is a bot account' : ''}
+         • Status: ${user.presence.status}
+         • Game: ${user.presence.game ? user.presence.game.name : 'None'}`)
+        .setThumbnail(user.displayAvatarURL())
+        .setTimestamp();
+
+
+    return msg.channel.send(userInfo);
   }
 };
