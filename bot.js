@@ -130,7 +130,7 @@ client.on("message", async (message) => {
       var app = new Discord.MessageEmbed()
         .setColor('#b5b5b5')
         .setTitle("Awaiting Verification")
-        .setAuthor(author.tag, author.displayAvatarURL())
+        .setAuthor(author.tag, author.displayAvatarURL().replace('webp','png'))
         .setDescription(message.content)
         .setTimestamp();
 
@@ -147,8 +147,8 @@ client.on("message", async (message) => {
       var acceptdm = createEmbed('#52eb6c', 'Verification Application', guild.name, guild.iconURL(), VerifyMessage);
       var denydm = createEmbed('#d94a4a', 'Verification Application', guild.name, guild.iconURL(), `You have been denied for verification! Submit another application at <#${verifyModule.VerifyChannel}>`);
       var awaitdm = createEmbed('#db583e', 'Verification Application', guild.name, guild.iconURL(), `Your verification application has been submitted for reviewal in \`${guild.name}\``);
-      var accepted = createEmbed('#52eb6c', 'Accepted', author.tag, author.displayAvatarURL(), `${message.content}`);
-      var denied = createEmbed('#d94a4a', 'Denied', author.tag, author.displayAvatarURL(), `${message.content}`);
+      var accepted = createEmbed('#52eb6c', 'Accepted', author.tag, author.displayAvatarURL().replace('webp','png'), `${message.content}`);
+      var denied = createEmbed('#d94a4a', 'Denied', author.tag, author.displayAvatarURL().replace('webp','png'), `${message.content}`);
 
       VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: false });
 
