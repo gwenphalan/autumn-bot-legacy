@@ -4,7 +4,8 @@ var con = mysql.createConnection({
   host: "webserver3.pebblehost.com",
   user: "autumnfo_admin",
   password: "9p4kd%DkOw96",
-  database: "autumnfo_discordbot"
+  database: "autumnfo_discordbot",
+  charset : 'utf8mb4'
 });
 
 con.connect(function(err) {
