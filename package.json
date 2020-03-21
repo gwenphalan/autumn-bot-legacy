@@ -18,6 +18,7 @@
 		"node-cron": "^2.0.3",
 		"nodemon": "^2.0.2",
 		"request": "^2.88.0",
-		"sqlite": "^2.9.3"
+		"sqlite": "^2.9.3",
+		"sqlite3": "^4.1.1"
 	}
 }

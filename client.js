@@ -8,8 +8,8 @@ const client = new commando.Client({
   invite: 'https://discord.gg/DfByvyN'
 });
 
-//const token = 'NjczNDI0MTkzODYxMTg5NjYx.XmPwAA.SHE1PPMI4fFTFZ_wwJGsr_qJi34';
-const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XmPydA.C2hThK98Sz-r5t3jpOpeByFvkjY';
+const token = 'NjczNDI0MTkzODYxMTg5NjYx.XnWCHA.GCa3p1QQ3-2SgiaR38W-9Qu15Rs';
+//const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XmPydA.C2hThK98Sz-r5t3jpOpeByFvkjY';
 client.setProvider(
   sqlite.open(path.join(__dirname, 'database.sqlite3')).then(db => new commando.SQLiteProvider(db))
 ).catch(console.error);
