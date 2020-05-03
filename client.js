@@ -2,6 +2,7 @@ const commando = require('discord.js-commando');
 const sqlite = require('sqlite');
 const path = require('path');
 const apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjU0ODQzNzM0NjIyMjExMCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTgyNTk3MzQ3fQ.AOFlwDk84YGZBAdcRHSnmNYB05adjih6GRWONTR4VJk';
+const DBL = require("dblapi.js");
 
 const client = new commando.Client({
   owner: '279910519467671554',
