@@ -3,6 +3,7 @@ const { client } = require(__dirname + "/client.js");
 const Discord = require('discord.js');
 const con = require(__dirname + '/db.js');
 const Guild = require(__dirname + '/guild.js');
+const DBL = require("dblapi.js");
 
 client.on("guildCreate", async function (guild) {
   await client.user.setPresence({

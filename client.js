@@ -1,12 +1,15 @@
 const commando = require('discord.js-commando');
 const sqlite = require('sqlite');
 const path = require('path');
+const apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjU0ODQzNzM0NjIyMjExMCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTgyNTk3MzQ3fQ.AOFlwDk84YGZBAdcRHSnmNYB05adjih6GRWONTR4VJk';
 
 const client = new commando.Client({
   owner: '279910519467671554',
   commandPrefix: '-',
   invite: 'https://discord.gg/DfByvyN'
 });
+
+const dbl = new DBL(apiToken, client);
 
 //const token = 'NjczNDI0MTkzODYxMTg5NjYx.XmPwAA.SHE1PPMI4fFTFZ_wwJGsr_qJi34';
 const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XmPydA.C2hThK98Sz-r5t3jpOpeByFvkjY';
@@ -21,6 +24,9 @@ client.on("ready", () => {
     console.log("I'm online!");
     clearInterval(interval);
   }, 100);
+  setInterval(() => {
+      dbl.postStats(client.guilds.size, client.shards.Id, client.shards.total);
+  }, 1800000);
 });
 
 client
