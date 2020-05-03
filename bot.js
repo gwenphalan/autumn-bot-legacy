@@ -74,7 +74,7 @@ client.on("guildMemberAdd", async (member) => {
   if (verifyModule.enabled) {
     var nonVerifiedRole = verifyModule.NonVerifiedRole;
 
-    member.roles.add(nonVerifiedRole);
+    member.roles.add(nonVerifiedRole, "New User");
   }
 })
 
@@ -114,6 +114,7 @@ client.on("message", async (message) => {
 
       var StaffRole = verifyModule.StaffRole;
       var NonVerifiedRole = verifyModule.NonVerifiedRole;
+      var VerifiedRole = verifyModule.VerifyRole;
 
       var VerifyMessage = verifyModule.VMessage;
 
@@ -150,7 +151,7 @@ client.on("message", async (message) => {
       var accepted = createEmbed('#52eb6c', 'Accepted', author.tag, author.displayAvatarURL().replace('webp','png'), `${message.content}`);
       var denied = createEmbed('#d94a4a', 'Denied', author.tag, author.displayAvatarURL().replace('webp','png'), `${message.content}`);
 
-      VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: false });
+      VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: false }, "User Awaiting Verification");
 
       message.delete();
 
@@ -183,7 +184,12 @@ client.on("message", async (message) => {
       if (reaction.emoji.id == "673092790074474527") {
         VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
           .catch(console.error);
-        member.roles.remove(NonVerifiedRole)
+        member.roles.remove(NonVerifiedRole, "Verification Application Approved")
+
+        if(verifyModule.VerifiedRoleEnabled)
+        {
+          member.roles.add(VerifiedRole, "Verification Application Approved")
+        }
 
         msg.edit(accepted)
           .catch(console.error);
@@ -192,7 +198,7 @@ client.on("message", async (message) => {
 
         author.send(acceptdm);
       } else {
-        VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
+        VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null }, "Verification Application Denied")
           .catch(console.error);
 
         msg.edit(denied)
