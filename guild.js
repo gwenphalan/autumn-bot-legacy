@@ -46,16 +46,47 @@ module.exports = class Guild
     return verifyModule;
   }
   
-  async modModule()
+  async ticketModule()
   {
     let guild = await getGuildInfo(this.guildID);
     
     if(!guild[0]) return null;
 
-    let modModuleJSON = guild[0].ModModule;
+    let ticketModuleJSON = guild[0].TicketModule;
 
-    let modModule = JSON.parse(escapeSpecialChars(modModuleJSON));
+    let ticketModule = JSON.parse(escapeSpecialChars(ticketModuleJSON));
     
     return modModule;
+  }
+
+  async updateTicketModule(module)
+  {
+    var final = JSON.stringify(module);
+
+    var a = 0;
+    var count = 0;
+    for (a = 0; a < JSON.stringify(module).length; a++) {
+        if (JSON.stringify(module).charAt(a) == "'") {
+            final = [final.slice(0, a + count), '\\', final.slice(a + count)].join('');
+            count++;
+
+        }
+    }
+  }
+
+  async addTicket(userID, channelID)
+  {
+    let ticketModule = await this.ticketModule();
+
+    let ticket = 
+    {
+      "user": userID,
+      "channel": channelID,
+      "status": "open"
+    }
+
+    ticketModule.tickets.push(ticket);
+
+    this.updateTicketModule(ticketModule)
   }
 }
