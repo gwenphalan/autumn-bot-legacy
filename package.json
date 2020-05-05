@@ -16,7 +16,7 @@
 		"fs": "0.0.1-security",
 		"mysql": "^2.18.1",
 		"node-cron": "^2.0.3",
-		"nodemon": "^2.0.2",
+		"nodemon": "^2.0.3",
 		"request": "^2.88.0",
 		"sqlite": "^2.9.3"
 	}
