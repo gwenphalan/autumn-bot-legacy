@@ -91,6 +91,17 @@ client.on("message", async (message) => {
 
     let verifyModule = await GuildOBJ.verifyModule();
 
+    if(verifyModule == null)
+    {
+      var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${message.guild.id}', '{"enabled":false}')`;
+      con.query(sql, function (err, result) {
+        if (err) throw err;
+        console.log("1 record inserted");
+      });
+
+      return;
+    }
+
     if (verifyModule.enabled) {
 
       var msgChannel = message.channel.id;
@@ -180,6 +191,8 @@ client.on("message", async (message) => {
 
       const reaction = collected.first();
 
+      console.log(reaction.client.user.username);
+
 
       if (reaction.emoji.id == "673092790074474527") {
         VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
@@ -188,7 +201,7 @@ client.on("message", async (message) => {
 
         if(verifyModule.VerifiedRoleEnabled)
         {
-          member.roles.add(VerifiedRole, "Verification Application Approved")
+          member.roles.add(verifyModule.VerifiedRole, "Verification Application Approved");
         }
 
         msg.edit(accepted)
