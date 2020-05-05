@@ -203,11 +203,7 @@ client.on("message", async (message) => {
 
       const reaction = collected.first();
 
-      console.log("EEEEE" + reaction.message);
-
       var reaction_user = reaction.users.cache.array()[1];
-
-      console.log(reaction.users.cache.array());
 
       var accepted = createApp('#52eb6c', author.tag, author.displayAvatarURL().replace('webp','png'), `${message.content}`, `Accepted By ${reaction_user.username}#${reaction_user.discriminator}`, reaction_user.displayAvatarURL().replace('webp','png'));
       var denied = createApp('#d94a4a', author.tag, author.displayAvatarURL().replace('webp','png'), `${message.content}`, `Denied By ${reaction_user.username}#${reaction_user.discriminator}`, reaction_user.displayAvatarURL().replace('webp','png'));
@@ -229,7 +225,7 @@ client.on("message", async (message) => {
 
         author.send(acceptdm);
       } else {
-        VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null }, "Verification Application Denied")
+        VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null }, `Verification Application Denied By ${reaction_user.username}#${reaction_user.discriminator}`)
           .catch(console.error);
 
         msg.edit(denied)

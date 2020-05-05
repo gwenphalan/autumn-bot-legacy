@@ -29,6 +29,7 @@ module.exports = class UserInfoCommand extends commando.Command {
     const user = member.user;
 
     const userInfo = new Discord.MessageEmbed()
+        .setAuthor('User Info', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
         .setTitle(`Info on **${user.username}#${user.discriminator}** (ID: ${user.id})`)
         .setDescription(stripIndents`
         **❯ Member Details**
@@ -40,6 +41,7 @@ module.exports = class UserInfoCommand extends commando.Command {
          • Status: ${user.presence.status}
          • Game: ${user.presence.game ? user.presence.game.name : 'None'}`)
         .setThumbnail(user.displayAvatarURL().replace('webp','png'))
+        .setFooter(`Requested By ${msg.author.tag}`)
         .setTimestamp();
 
 

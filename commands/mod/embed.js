@@ -60,12 +60,23 @@ module.exports = class ClassName extends commando.Command {
         .setTitle(title)
         .setAuthor(msg.author.username, msg.author.displayAvatarURL())
         .setDescription(desc);
+        
+        const created = new Discord.MessageEmbed()
+        .setColor('#db583e')
+        .setAuthor('Custom Embed', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=128')
+        .setTitle('Embed Created!');
+        
+        const editted = new Discord.MessageEmbed()
+        .setColor('#db583e')
+        .setAuthor('Custom Embed', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=128')
+        .setTitle('Embed Editted!');
+
 
         if(messageId === "new"){
 
         channel.send(embed);
         
-        msg.reply("**Embed Created**");
+        msg.channel.send(created);
 
         }else{
         
@@ -75,7 +86,7 @@ module.exports = class ClassName extends commando.Command {
                 fetchedMsg.edit(embed);
             })
             .catch(console.errror);
-            msg.reply("**Embed Editted**");
+            msg.channel.send(editted);
 
         }
         
