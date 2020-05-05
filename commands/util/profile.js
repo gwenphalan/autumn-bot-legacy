@@ -75,12 +75,14 @@ module.exports = class ClassName extends commando.Command {
         var profile = JSON.parse(this.escapeSpecialChars(profileInfo.profile));
 
         var profileEmbed = new Discord.MessageEmbed()
+        .setAuthor('Profiles', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
         .setTitle(`${profile.username}#${profile.tag}`)
         .setDescription(`${profile.biography}`)
         .addField('Pronouns',profile.pronouns, true)
         .setColor(`#${profile.color}`)
         .setThumbnail(`https://cdn.discordapp.com/avatars/${profile.userID}/${profile.avatar}.png?size=512`)
         .setURL(`https://www.autumnbot.net/profile/${profile.userID}`)
+        .setFooter(`Requested By ${msg.author.tag}`)
 
         if(profile.age != '')
         {
