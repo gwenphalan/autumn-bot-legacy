@@ -2,7 +2,6 @@
 const { client } = require(__dirname + "/client.js");
 const Discord = require('discord.js');
 const con = require(__dirname + '/db.js');
-const Guild = require(__dirname + '/guild.js');
 const verification = require(__dirname + "/modules/verification.js");
 
 client.on("guildCreate", async function (guild) {
@@ -39,24 +38,4 @@ client.on("guildDelete", async function (guild) {
       type: "LISTENING",
     }
   }).then(() => console.log('Status Set'));
-});
-
-
-client.on("channelCreate", async (channel) => {
-  if (channel.guild) {
-    let GuildOBJ = new Guild(channel.guild.id)
-
-    let verifyModule = await GuildOBJ.verifyModule();
-
-    if (verifyModule.enabled == true) {
-      channel.overwritePermissions([
-        {
-           id: verifyModule.NonVerifiedRole,
-           deny: ['VIEW_CHANNEL'],
-        },
-      ]);
-
-    console.log(`VerifyModule Log -- Updated Channel\n--------\n    Channel: m#${channel.name}\n    ID: ${channel.id}\n    Server ${GuildOBJ.info.name}\n--------`);
-    }
-  }
 });
