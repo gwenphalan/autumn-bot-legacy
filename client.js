@@ -7,7 +7,8 @@ const DBL = require("dblapi.js");
 const client = new commando.Client({
   owner: '279910519467671554',
   commandPrefix: '-',
-  invite: 'https://discord.gg/DfByvyN'
+  invite: 'https://discord.gg/DfByvyN',
+  partials: ['MESSAGE', 'REACTION']
 });
 
 const dbl = new DBL(apiToken, client);
@@ -76,7 +77,7 @@ client
 			${guild ? `in guild ${guild.name} (${guild.id})` : 'globally'}.
 		`);
   });
-  
+
 client.registry
   .registerGroup('mod', 'Mod')
   .registerGroup('fun', 'Fun')
