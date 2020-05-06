@@ -7,7 +7,6 @@ function escapeSpecialChars(jsonString) {
     .replace(/\r/g, "\\r")
     .replace(/\t/g, "\\t")
     .replace(/\f/g, "\\f");
-
 }
 
 async function getGuildInfo(id)
@@ -15,6 +14,17 @@ async function getGuildInfo(id)
   return new Promise((resolve, reject) => {
     con.query(
       "SELECT * FROM guildsettings WHERE Guild = '" + id + "' LIMIT 1", 
+      (err, result) => {
+        return err ? reject(err) : resolve(result);
+      })
+  })
+}
+
+async function setGuildInfo(id, column, value)
+{
+  return new Promise((resolve, reject) => {
+    con.query(
+      `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${id}`, 
       (err, result) => {
         return err ? reject(err) : resolve(result);
       })
@@ -45,48 +55,70 @@ module.exports = class Guild
     
     return verifyModule;
   }
-  
-  async ticketModule()
+
+  async getApps()
   {
     let guild = await getGuildInfo(this.guildID);
     
     if(!guild[0]) return null;
 
-    let ticketModuleJSON = guild[0].TicketModule;
+    let verifyModuleJSON = guild[0].VerifyApps;
 
-    let ticketModule = JSON.parse(escapeSpecialChars(ticketModuleJSON));
+    let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
     
-    return modModule;
+    return verifyModule;
   }
 
-  async updateTicketModule(module)
+  async updateApps(apps)
   {
-    var final = JSON.stringify(module);
+    var final = JSON.stringify(apps);
 
     var a = 0;
     var count = 0;
-    for (a = 0; a < JSON.stringify(module).length; a++) {
-        if (JSON.stringify(module).charAt(a) == "'") {
+    for (a = 0; a < JSON.stringify(apps).length; a++) {
+        if (JSON.stringify(apps).charAt(a) == "'") {
             final = [final.slice(0, a + count), '\\', final.slice(a + count)].join('');
             count++;
 
         }
     }
+
+    var result = await setGuildInfo(this.guildID, "VerifyApps", final);
+
+    return result;
   }
 
-  async addTicket(userID, channelID)
+  async checkApp(messageID)
   {
-    let ticketModule = await this.ticketModule();
+    let apps = await this.getApps();
 
-    let ticket = 
+    let app = apps[messageID];
+
+    if(app)
     {
-      "user": userID,
-      "channel": channelID,
-      "status": "open"
+      return true;
     }
+    else
+    {
+      return false;
+    }
+  }
 
-    ticketModule.tickets.push(ticket);
+  async createApplication(messageID, userID, messageContent)
+  {
+    let apps = await this.getApps();
 
-    this.updateTicketModule(ticketModule)
+    apps[messageID] = {"userID": userID, "userApp": messageContent};
+
+    this.updateApps(apps);
+  }
+
+  async deleteApplication(messageID)
+  {
+    let apps = await this.getApps();
+
+    delete apps[messageID]
+
+    this.updateApps(apps);
   }
 }

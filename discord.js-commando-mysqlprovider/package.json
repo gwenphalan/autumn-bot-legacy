@@ -1,0 +1,50 @@
+{
+  "_from": "discord.js-commando-mysqlprovider@^0.1.0",
+  "_id": "discord.js-commando-mysqlprovider@0.1.0",
+  "_inBundle": false,
+  "_integrity": "sha1-faOE/VKxHgdtUtPVJN6/4Py69l0=",
+  "_location": "/discord.js-commando-mysqlprovider",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "discord.js-commando-mysqlprovider@^0.1.0",
+    "name": "discord.js-commando-mysqlprovider",
+    "escapedName": "discord.js-commando-mysqlprovider",
+    "rawSpec": "^0.1.0",
+    "saveSpec": null,
+    "fetchSpec": "^0.1.0"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/discord.js-commando-mysqlprovider/-/discord.js-commando-mysqlprovider-0.1.0.tgz",
+  "_shasum": "7da384fd52b11e076d52d3d524debfe0fcbaf65d",
+  "_spec": "discord.js-commando-mysqlprovider@^0.1.0",
+  "_where": "/home/gwen/Desktop/Autumn Bot/autumn-bot",
+  "author": {
+    "name": "Charlotte Dunois"
+  },
+  "bugs": {
+    "url": "https://github.com/CharlotteDunois/node-discord.js-commando-mysqlprovider/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "mysql2": "^1.2.0"
+  },
+  "deprecated": false,
+  "description": "Uses an MySQL database to store settings with guilds, for use with MySQL or MariaDB (recommended). It requires the `mysql2` npm package - making the connection is up to you.",
+  "engines": {
+    "node": ">=7.6.0"
+  },
+  "homepage": "https://github.com/CharlotteDunois/node-discord.js-commando-mysqlprovider#readme",
+  "license": "MIT",
+  "name": "discord.js-commando-mysqlprovider",
+  "peerDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CharlotteDunois/node-discord.js-commando-mysqlprovider.git"
+  },
+  "version": "0.1.0"
+}

@@ -2,7 +2,7 @@ const commando = require('discord.js-commando');
 const sqlite = require('sqlite');
 const path = require('path');
 const MySQL = require('mysql2/promise');
-const MySQLProvider = require('discord.js-commando-mysqlprovider');
+const MySQLProvider = require(__dirname + '/discord.js-commando-mysqlprovider');
 const oneLine = require('common-tags').oneLine;
 const apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjU0ODQzNzM0NjIyMjExMCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTgyNTk3MzQ3fQ.AOFlwDk84YGZBAdcRHSnmNYB05adjih6GRWONTR4VJk';
 const DBL = require("dblapi.js");
@@ -16,7 +16,7 @@ const client = new commando.Client({
 
 const dbl = new DBL(apiToken, client);
 
-//const token = 'NjczNDI0MTkzODYxMTg5NjYx.XmPwAA.SHE1PPMI4fFTFZ_wwJGsr_qJi34';
+//const token = 'NjczNDI0MTkzODYxMTg5NjYx.XrLf6g.13JuyJLvzFXcK9Q3LOS_AC_V3c8';
 const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XmPydA.C2hThK98Sz-r5t3jpOpeByFvkjY';
 client.setProvider(
   sqlite.open(path.join(__dirname, 'database.sqlite3')).then(db => new commando.SQLiteProvider(db))
