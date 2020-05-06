@@ -272,13 +272,14 @@ client.on('messageReactionAdd', async (reaction, user) => {
   var denied = createApp('#d94a4a', author.tag, author.displayAvatarURL().replace('webp','png'), `${app.userApp}`, `Denied By ${user.username}#${user.discriminator}`, user.displayAvatarURL().replace('webp','png'));
 
   if (reaction.emoji.id == "673092790074474527") {
+    GuildOBJ.deleteApplication(reaction.message.id);
     VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
       .catch(console.error);
     member.roles.remove(NonVerifiedRole, `Verification Application Approved By ${user.username}#${user.discriminator}`)
 
     if(verifyModule.VerifiedRoleEnabled)
     {
-      member.roles.add(VerifiedRole, `Verification Application Approved By ${user.username}#${user.discriminator}`);
+      member.roles.add(verifyModule.VerifiedRole, `Verification Application Approved By ${user.username}#${user.discriminator}`);
     }
 
     msg.edit(accepted)
@@ -288,6 +289,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
     author.send(acceptdm);
   } else {
+    GuildOBJ.deleteApplication(reaction.message.id)
     VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null }, `Verification Application Denied By ${user.username}#${user.discriminator}`)
       .catch(console.error);
 
