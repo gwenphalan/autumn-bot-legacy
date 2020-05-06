@@ -31,6 +31,24 @@ async function setGuildInfo(id, column, value)
   })
 }
 
+function stringify(obj)
+{
+
+
+  var final = JSON.stringify(obj);
+
+  var a = 0;
+  var count = 0;
+  for (a = 0; a < JSON.stringify(obj).length; a++) {
+      if (JSON.stringify(obj).charAt(a) == "'") {
+          final = [final.slice(0, a + count), '\\', final.slice(a + count)].join('');
+          count++;
+
+      }
+  }
+  return final;
+}
+
 module.exports = class Guild
 {
   constructor (guildID)
@@ -56,6 +74,19 @@ module.exports = class Guild
     return verifyModule;
   }
 
+  async modModule()
+  {
+    let guild = await getGuildInfo(this.guildID);
+    
+    if(!guild[0]) return null;
+
+    let verifyModuleJSON = guild[0].ModModule;
+
+    let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
+    
+    return verifyModule;
+  }
+
   async getApps()
   {
     let guild = await getGuildInfo(this.guildID);
@@ -71,19 +102,7 @@ module.exports = class Guild
 
   async updateApps(apps)
   {
-    var final = JSON.stringify(apps);
-
-    var a = 0;
-    var count = 0;
-    for (a = 0; a < JSON.stringify(apps).length; a++) {
-        if (JSON.stringify(apps).charAt(a) == "'") {
-            final = [final.slice(0, a + count), '\\', final.slice(a + count)].join('');
-            count++;
-
-        }
-    }
-
-    var result = await setGuildInfo(this.guildID, "VerifyApps", final);
+    var result = await setGuildInfo(this.guildID, "VerifyApps", stringify(apps));
 
     return result;
   }
@@ -120,5 +139,44 @@ module.exports = class Guild
     delete apps[messageID]
 
     this.updateApps(apps);
+  }
+
+  async banUser(userID, time)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.bans)
+    {
+      mod.bans = {};
+    }
+
+    let bans = mod.bans;
+
+    bans[userID] = Date.now() + time;
+
+    var result = await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async unbanUser(userID)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.bans)
+    {
+      mod.bans = {};
+    }
+
+    let bans = mod.bans;
+
+    delete bans[userID];
+
+    var result = await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async getBans()
+  {
+    let mod = await this.modModule();
+
+    return mod.bans;
   }
 }

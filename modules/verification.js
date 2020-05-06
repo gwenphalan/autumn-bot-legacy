@@ -32,7 +32,7 @@ client.on("message", async (message) => {
         let verifyModule = await GuildOBJ.verifyModule();
 
         if (verifyModule == null) {
-            var sql = `INSERT INTO guildsettings (Guild, VerifyModule, VerifyApps) VALUES ('${message.guild.id}', '{"enabled":false}', '{}')`;
+            var sql = `INSERT INTO guildsettings (Guild, ModModule, VerifyModule, VerifyApps) VALUES ('${message.guild.id}', '{"enabled":false}', '{"enabled":false}', '{}')`;
             con.query(sql, function (err, result) {
                 if (err) throw err;
                 console.log("1 record inserted");
