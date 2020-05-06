@@ -12,16 +12,21 @@ cron.schedule('* * * * * *', async () => {
     guilds.each(async(guild) => {
         var guildOBJ = new Guild(guild.id)
 
-        var bans = await guildOBJ.getBans();
+        var mod = await guildOBJ.modModule()
 
-        for(const userID in bans)
+        if(mod.enabled)
         {
-            var time = bans[userID];
+            var bans = await guildOBJ.getBans();
 
-            if(time <= Date.now())
+            for(const userID in bans)
             {
-                guild.members.unban(userID);
-                guildOBJ.unbanUser(userID);
+                var time = bans[userID];
+
+                if(time <= Date.now())
+                {
+                    guild.members.unban(userID);
+                    guildOBJ.unbanUser(userID);
+                }
             }
         }
     })
