@@ -1,6 +1,9 @@
 const commando = require('discord.js-commando');
 const sqlite = require('sqlite');
 const path = require('path');
+const MySQL = require('mysql2/promise');
+const MySQLProvider = require(__dirname + '/discord.js-commando-mysqlprovider');
+const oneLine = require('common-tags').oneLine;
 const apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjU0ODQzNzM0NjIyMjExMCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTgyNTk3MzQ3fQ.AOFlwDk84YGZBAdcRHSnmNYB05adjih6GRWONTR4VJk';
 const DBL = require("dblapi.js");
 
@@ -13,7 +16,7 @@ const client = new commando.Client({
 
 const dbl = new DBL(apiToken, client);
 
-//const token = 'NjczNDI0MTkzODYxMTg5NjYx.XmPwAA.SHE1PPMI4fFTFZ_wwJGsr_qJi34';
+//const token = 'NjczNDI0MTkzODYxMTg5NjYx.XrLf6g.13JuyJLvzFXcK9Q3LOS_AC_V3c8';
 const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XmPydA.C2hThK98Sz-r5t3jpOpeByFvkjY';
 client.setProvider(
   sqlite.open(path.join(__dirname, 'database.sqlite3')).then(db => new commando.SQLiteProvider(db))
@@ -87,6 +90,20 @@ client.registry
   .registerTypesIn(path.join(__dirname, 'types'))
   .registerCommandsIn(path.join(__dirname, 'commands'));
 
-client.login(token);
+const SQL_HOST = "webserver3.pebblehost.com";
+const SQL_USER = "autumnfo_admin";
+const SQL_PASS = "9p4kd%DkOw96";
+const SQL_BASE = "autumnfo_discordbot";
+
+MySQL.createConnection({
+    host: SQL_HOST,
+    user: SQL_USER,
+    password: SQL_PASS,
+    database: SQL_BASE,
+    charset : 'utf8mb4'
+}).then((db) => {
+  client.setProvider(new MySQLProvider(db));
+  client.login(token);
+});
 
 exports.client = client;

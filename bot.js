@@ -12,7 +12,7 @@ client.on("guildCreate", async function (guild) {
     }
   }).then(() => console.log('Status Set'));
 
-  var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${guild.id}', '{"enabled":false}')`;
+  var sql = `INSERT INTO guildsettings (Guild, VerifyModule, VerifyApps) VALUES ('${guild.id}', '{"enabled":false}', '{}')`;
   con.query(sql, function (err, result) {
     if (err) throw err;
     console.log("1 record inserted");
@@ -48,15 +48,9 @@ client.on("channelCreate", async (channel) => {
     let verifyModule = await GuildOBJ.verifyModule();
 
     if (verifyModule.enabled == true) {
-      var nonVerifiedRole;
-
-      await channel.guild.roles.fetch(verifyModule.NonVerifiedRole)
-        .then(role => nonVerifiedRole = role)
-        .catch(console.error);
-
       channel.overwritePermissions([
         {
-           id: nonVerifiedRole,
+           id: verifyModule.NonVerifiedRole,
            deny: ['VIEW_CHANNEL'],
         },
       ]);
@@ -93,7 +87,7 @@ client.on("message", async (message) => {
 
     if(verifyModule == null)
     {
-      var sql = `INSERT INTO guildsettings (Guild, VerifyModule) VALUES ('${message.guild.id}', '{"enabled":false}')`;
+      var sql = `INSERT INTO guildsettings (Guild, VerifyModule, VerifyApps) VALUES ('${message.guild.id}', '{"enabled":false}', '{}')`;
       con.query(sql, function (err, result) {
         if (err) throw err;
         console.log("1 record inserted");
@@ -125,9 +119,6 @@ client.on("message", async (message) => {
 
       var StaffRole = verifyModule.StaffRole;
       var NonVerifiedRole = verifyModule.NonVerifiedRole;
-      var VerifiedRole = verifyModule.VerifyRole;
-
-      var VerifyMessage = verifyModule.VMessage;
 
       if (verifyModule.AVRole && msgChannel == VerifyChannel && !message.author.bot) {
         message.channel.send(setup);
@@ -157,21 +148,6 @@ client.on("message", async (message) => {
           .setDescription(Desc)
           .setTimestamp()
       }
-
-      function createApp(color, authorName, authorIcon, Desc, Footer, staffIcon)
-      {
-        return new Discord.MessageEmbed()
-          .setColor(color)
-          .setTitle(authorName)
-          .setAuthor("Verification", "https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=128")
-          .setThumbnail(authorIcon)
-          .setDescription(Desc)
-          .setFooter(Footer, staffIcon)
-          .setTimestamp()
-      }
-
-      var acceptdm = createEmbed('#52eb6c', guild.name, guild.iconURL(), VerifyMessage);
-      var denydm = createEmbed('#d94a4a', 'Verification Application', guild.name, guild.iconURL(), `You have been denied for verification! Submit another application at <#${verifyModule.VerifyChannel}>`);
       var awaitdm = createEmbed('#db583e', 'Verification Application', guild.name, guild.iconURL(), `Your verification application has been submitted for reviewal in \`${guild.name}\``);
 
       VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: false }, "User Awaiting Verification");
@@ -187,54 +163,140 @@ client.on("message", async (message) => {
         .catch(console.error)
         .then(message => message.delete());
 
+      await GuildOBJ.createApplication(msg.id, message.author.id, message.content)
+
       msg.react(accept).then(() =>
         msg.react(deny)
       );
 
       author.send(awaitdm);
-
-      const filter = (reaction, user) => {
-        return reaction.emoji.id == "673092790074474527" && !user.bot || reaction.emoji.id == "673092807614791690" && !user.bot;
-      }
-
-      var collected;
-      await msg.awaitReactions(filter, { max: 1 })
-        .then(collectedReactions => collected = collectedReactions);
-
-      const reaction = collected.first();
-
-      var reaction_user = reaction.users.cache.array()[1];
-
-      var accepted = createApp('#52eb6c', author.tag, author.displayAvatarURL().replace('webp','png'), `${message.content}`, `Accepted By ${reaction_user.username}#${reaction_user.discriminator}`, reaction_user.displayAvatarURL().replace('webp','png'));
-      var denied = createApp('#d94a4a', author.tag, author.displayAvatarURL().replace('webp','png'), `${message.content}`, `Denied By ${reaction_user.username}#${reaction_user.discriminator}`, reaction_user.displayAvatarURL().replace('webp','png'));
-
-      if (reaction.emoji.id == "673092790074474527") {
-        VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
-          .catch(console.error);
-        member.roles.remove(NonVerifiedRole, `Verification Application Approved By ${reaction_user.username}#${reaction_user.discriminator}`)
-
-        if(verifyModule.VerifiedRoleEnabled)
-        {
-          member.roles.add(verifyModule.VerifiedRole, `Verification Application Approved By ${reaction_user.username}#${reaction_user.discriminator}`);
-        }
-
-        msg.edit(accepted)
-          .catch(console.error);
-        msg.reactions.removeAll();
-
-
-        author.send(acceptdm);
-      } else {
-        VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null }, `Verification Application Denied By ${reaction_user.username}#${reaction_user.discriminator}`)
-          .catch(console.error);
-
-        msg.edit(denied)
-          .catch(console.error);
-        msg.reactions.removeAll();
-
-        author.send(denydm);
-      }
     }
   }
 }
 );
+
+client.on('messageReactionAdd', async (reaction, user) => {
+  // When we receive a reaction we check if the reaction is partial or not
+  if (reaction.partial) {
+      // If the message this reaction belongs to was removed the fetching might result in an API error, which we need to handle
+      try {
+          await reaction.fetch();
+      } catch (error) {
+          console.log('Something went wrong when fetching the message: ', error);
+          // Return as `reaction.message.author` may be undefined/null
+          return;
+      }
+  }
+
+  var guild = reaction.message.guild;
+
+  var GuildOBJ = new Guild(guild.id);
+
+  var verifyModule = await GuildOBJ.verifyModule();
+
+  if(verifyModule.enabled == false) return;
+
+  if(user.bot) return;
+  
+  var VerifyChannel;
+
+  await client.channels.fetch(verifyModule.VerifyChannel)
+    .then(channel => VerifyChannel = channel)
+    .catch(console.error);
+
+  var ModVerifyChannel;
+
+  await client.channels.fetch(verifyModule.MVChannel)
+    .then(channel => ModVerifyChannel = channel)
+    .catch(console.error);
+
+  var apps = await GuildOBJ.getApps();
+
+  var VerifyChannel;
+
+  await client.channels.fetch(verifyModule.VerifyChannel)
+    .then(channel => VerifyChannel = channel)
+    .catch(console.error);
+
+  var ModVerifyChannel;
+
+  await client.channels.fetch(verifyModule.MVChannel)
+    .then(channel => ModVerifyChannel = channel)
+    .catch(console.error);
+
+  var StaffRole = verifyModule.StaffRole;
+  var NonVerifiedRole = verifyModule.NonVerifiedRole;
+
+  var VerifiedRole = verifyModule.VerifyRole;
+
+  var VerifyMessage = verifyModule.VMessage;
+
+  var checkApp = await GuildOBJ.checkApp(reaction.message.id);
+
+  if(!checkApp) return;
+
+  var app = apps[reaction.message.id];
+
+  function createEmbed(color, title, authorName, authorIcon, Desc)
+  {
+    return new Discord.MessageEmbed()
+      .setColor(color)
+      .setTitle(title)
+      .setAuthor(authorName, authorIcon)
+      .setDescription(Desc)
+      .setTimestamp()
+  }
+
+  var acceptdm = createEmbed('#52eb6c', guild.name, guild.iconURL(), VerifyMessage);
+  var denydm = createEmbed('#d94a4a', 'Verification Application', guild.name, guild.iconURL(), `You have been denied for verification! Submit another application at <#${verifyModule.VerifyChannel}>`);
+
+  function createApp(color, authorName, authorIcon, Desc, Footer, staffIcon)
+  {
+    return new Discord.MessageEmbed()
+      .setColor(color)
+      .setTitle(authorName)
+      .setAuthor("Verification", "https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=128")
+      .setThumbnail(authorIcon)
+      .setDescription(Desc)
+      .setFooter(Footer, staffIcon)
+      .setTimestamp()
+  }
+
+  var author = guild.members.cache.get(app.userID).user;
+
+  var member = guild.members.cache.get(app.userID);
+
+  var msg = reaction.message;
+
+  var accepted = createApp('#52eb6c', author.tag, author.displayAvatarURL().replace('webp','png'), `${app.userApp}`, `Accepted By ${user.username}#${user.discriminator}`, user.displayAvatarURL().replace('webp','png'));
+  var denied = createApp('#d94a4a', author.tag, author.displayAvatarURL().replace('webp','png'), `${app.userApp}`, `Denied By ${user.username}#${user.discriminator}`, user.displayAvatarURL().replace('webp','png'));
+
+  if (reaction.emoji.id == "673092790074474527") {
+    GuildOBJ.deleteApplication(reaction.message.id);
+    VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
+      .catch(console.error);
+    member.roles.remove(NonVerifiedRole, `Verification Application Approved By ${user.username}#${user.discriminator}`)
+
+    if(verifyModule.VerifiedRoleEnabled)
+    {
+      member.roles.add(verifyModule.VerifiedRole, `Verification Application Approved By ${user.username}#${user.discriminator}`);
+    }
+
+    msg.edit(accepted)
+      .catch(console.error);
+    msg.reactions.removeAll();
+
+
+    author.send(acceptdm);
+  } else {
+    GuildOBJ.deleteApplication(reaction.message.id)
+    VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null }, `Verification Application Denied By ${user.username}#${user.discriminator}`)
+      .catch(console.error);
+
+    msg.edit(denied)
+      .catch(console.error);
+    msg.reactions.removeAll();
+
+    author.send(denydm);
+  }
+});
