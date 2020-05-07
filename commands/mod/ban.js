@@ -47,12 +47,6 @@ module.exports = class ClassName extends commando.Command {
         var time = banTime;
 
         if(mod.enabled == false) return;
-
-        if(!msg.member.roles.cache.has(mod.StaffRole))
-        {
-            msg.channel.send("You do not have permission to run this command!");
-            return;
-        }
         
         try {
             timestring(time);
@@ -64,11 +58,11 @@ module.exports = class ClassName extends commando.Command {
             }
           }
 
-        if(!user.bannable)
+        /*if(!user.bannable)
         {
             msg.channel.send(`You cannot ban this user!`);
             return;
-        }
+        }*/
 
         var str = reason;
         
@@ -84,12 +78,11 @@ module.exports = class ClassName extends commando.Command {
                 }
                 else
                 {
-                    str = banTime + " " + reason;
+                    str = banTime + reason;
                 }
             }
 
             msg.channel.send(`Banning ${user.user.tag} for reason: \`${str}\``);
-            guild.banUser(user.id, "infinite");
         }
         else
         {

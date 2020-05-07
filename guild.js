@@ -32,10 +32,10 @@ async function setGuildInfo(id, column, value)
   })
 }
 
-<<<<<<< Updated upstream
-=======
 function stringify(obj)
 {
+
+
   var final = JSON.stringify(obj);
 
   var a = 0;
@@ -50,7 +50,6 @@ function stringify(obj)
   return final;
 }
 
->>>>>>> Stashed changes
 module.exports = class Guild
 {
   constructor (guildID)
@@ -81,6 +80,19 @@ module.exports = class Guild
     return verifyModule;
   }
 
+  async modModule()
+  {
+    let guild = await getGuildInfo(this.guildID);
+    
+    if(!guild[0]) return null;
+
+    let verifyModuleJSON = guild[0].ModModule;
+
+    let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
+    
+    return verifyModule;
+  }
+
   async getApps()
   {
     let guild = await getGuildInfo(this.guildID);
@@ -96,19 +108,7 @@ module.exports = class Guild
 
   async updateApps(apps)
   {
-    var final = JSON.stringify(apps);
-
-    var a = 0;
-    var count = 0;
-    for (a = 0; a < JSON.stringify(apps).length; a++) {
-        if (JSON.stringify(apps).charAt(a) == "'") {
-            final = [final.slice(0, a + count), '\\', final.slice(a + count)].join('');
-            count++;
-
-        }
-    }
-
-    var result = await setGuildInfo(this.guildID, "VerifyApps", final);
+    var result = await setGuildInfo(this.guildID, "VerifyApps", stringify(apps));
 
     return result;
   }
@@ -146,10 +146,8 @@ module.exports = class Guild
 
     this.updateApps(apps);
   }
-<<<<<<< Updated upstream
-=======
 
-  async banUser(userID, username, tag, time)
+  async banUser(userID, time)
   {
     let mod = await this.modModule();
 
@@ -158,77 +156,27 @@ module.exports = class Guild
       mod.bans = {};
     }
 
-    var date;
-
-    if(time == 'infinite')
-    {
-      date = time;
-    }
-    else{
-      date = time + Date.now();
-    }
-
     let bans = mod.bans;
 
-    bans[userID] = 
-    {
-      "time": date,
-      "username": username,
-      "discriminator": tag
-    };
+    bans[userID] = Date.now() + time;
 
-    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+    var result = await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
   async unbanUser(userID)
   {
     let mod = await this.modModule();
-    username, tag
+
+    if(!mod.bans)
+    {
+      mod.bans = {};
+    }
+
+    let bans = mod.bans;
+
     delete bans[userID];
 
-    setGuildInfo(this.guildID, "ModModule", stringify(mod));
-  }
-
-  async muteUser(userID, time)
-  {
-    let mod = await this.modModule();
-
-    if(!mod.mutes)
-    {
-      mod.mutes = {};
-    }
-
-    let mutes = mod.mutes;
-
-    var date;
-
-    if(time == 'infinite')
-    {
-      date = time;
-    }
-    else{
-      date = time + Date.now();
-    }
-
-    mutes[userID] = date;
-
-    setGuildInfo(this.guildID, "ModModule", stringify(mod));
-  }
-
-  async unmuteUser(userID)
-  {
-    let mod = await this.modModule();
-
-    if(!mod.mutes)
-    {
-      mod.mutes = {};
-    }
-
-    let mutes = mod.mutes;
-
-    delete mutes[userID];
-
-    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+    var result = await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
   async getBans()
@@ -237,12 +185,4 @@ module.exports = class Guild
 
     return mod.bans;
   }
-
-  async getMutes()
-  {
-    let mod = await this.modModule();
-
-    return mod.mutes;
-  }
->>>>>>> Stashed changes
 }

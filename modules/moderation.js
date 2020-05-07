@@ -20,29 +20,12 @@ cron.schedule('* * * * * *', async () => {
 
             for(const userID in bans)
             {
-                var ban = bans[userID];
+                var time = bans[userID];
 
-                var time = ban.time;
-
-                if(time != "infinite" && time <= Date.now())
+                if(time <= Date.now())
                 {
                     guild.members.unban(userID);
                     guildOBJ.unbanUser(userID);
-                }
-            }
-
-            var mutedRole = mod.MutedRole;
-
-            var mutes = await guildOBJ.getMutes();
-
-            for(const userID in mutes)
-            {
-                var time = mutes[userID];
-
-                if(time != "infinite" && time <= Date.now())
-                {
-                    guild.members.cache.get(userID).roles.remove(mutedRole);
-                    guildOBJ.unmuteUser(userID);
                 }
             }
         }
