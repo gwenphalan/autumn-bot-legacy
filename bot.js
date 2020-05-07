@@ -12,7 +12,7 @@ client.on("guildCreate", async function (guild) {
     }
   }).then(() => console.log('Status Set'));
 
-  var sql = `INSERT INTO guildsettings (Guild, VerifyModule, VerifyApps) VALUES ('${guild.id}', '{"enabled":false}', '{}')`;
+  var sql = `INSERT INTO guildsettings (Guild, VerifyModule, ModModule, VerifyApps) VALUES ('${guild.id}', '{"enabled":false}', '{"enabled":false}', '{}')`;
   con.query(sql, function (err, result) {
     if (err) throw err;
     console.log("1 record inserted");
