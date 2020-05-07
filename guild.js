@@ -147,7 +147,7 @@ module.exports = class Guild
     this.updateApps(apps);
   }
 
-  async banUser(userID, time)
+  async banUser(userID, username, tag, time)
   {
     let mod = await this.modModule();
 
@@ -156,27 +156,85 @@ module.exports = class Guild
       mod.bans = {};
     }
 
+    var date;
+
+    if(time == 'infinite')
+    {
+      date = time;
+    }
+    else{
+      date = time + Date.now();
+    }
+
     let bans = mod.bans;
 
-    bans[userID] = Date.now() + time;
+    bans[userID] = 
+    {
+      "time": date,
+      "username": username,
+      "discriminator": tag
+    };
 
-    var result = await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
   async unbanUser(userID)
   {
     let mod = await this.modModule();
-
-    if(!mod.bans)
-    {
-      mod.bans = {};
-    }
-
-    let bans = mod.bans;
-
+    username, tag
     delete bans[userID];
 
-    var result = await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async muteUser(userID, time, reason, avatar, username, tag)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.mutes)
+    {
+      mod.mutes = {};
+    }
+
+    let mutes = mod.mutes;
+
+    var date;
+
+    if(time == 'infinite')
+    {
+      date = time;
+    }
+    else{
+      date = time + Date.now();
+    }
+
+    mutes[userID] = 
+    {
+      time: date,
+      date: Date.now(),
+      reason: reason,
+      avatar: avatar,
+      username: username, 
+      tag: tag
+    };
+
+    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async unmuteUser(userID)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.mutes)
+    {
+      mod.mutes = {};
+    }
+
+    let mutes = mod.mutes;
+
+    delete mutes[userID];
+
+    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
   async getBans()
@@ -184,5 +242,12 @@ module.exports = class Guild
     let mod = await this.modModule();
 
     return mod.bans;
+  }
+
+  async getMutes()
+  {
+    let mod = await this.modModule();
+
+    return mod.mutes;
   }
 }

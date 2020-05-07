@@ -116,7 +116,7 @@ module.exports = class ClassName extends commando.Command {
                 return;
             };
             msg.channel.send(`Mute \`${user.user.tag}\` for \`${prettyMs(timestring(time) * 1000)}\` for reason: \`${str}\``);
-            guild.muteUser(user.id, timestring(time) * 1000);
+            guild.muteUser(user.id, timestring(time) * 1000, reason, user.user.displayAvatarURL().replace('webp', 'png'), user.user.username, user.user.discriminator);
         }
 
         user.roles.add(mutedRole);
