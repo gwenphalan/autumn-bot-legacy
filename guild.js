@@ -106,6 +106,8 @@ module.exports = class Guild
 
   async createApplication(messageID, userID, messageContent)
   {
+    console.log(`Creating Application...\nGuild: ${this.guildID}\nmessageID: ${messageID}\nuserID: ${userID}\nmessageContent:'${messageContent}'`)
+
     let apps = await this.getApps();
 
     apps[messageID] = {"userID": userID, "userApp": messageContent};
@@ -115,6 +117,8 @@ module.exports = class Guild
 
   async deleteApplication(messageID)
   {
+    console.log(`Deleting Application...\nGuild: ${this.guildID}\nmessageID: ${messageID}`)
+
     let apps = await this.getApps();
 
     delete apps[messageID]
