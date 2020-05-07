@@ -26,6 +26,7 @@ async function setGuildInfo(id, column, value)
     con.query(
       `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${id}`, 
       (err, result) => {
+        console.log(`Update ${result.affectedRows} row(s)`)
         return err ? reject(err) : resolve(result);
       })
   })
@@ -59,6 +60,11 @@ module.exports = class Guild
   get info()
   {
     return client.guilds.cache.get(this.guildID);
+  }
+
+  async updateModule(moduleName, obj)
+  {
+    return setGuildInfo(this.guildID, moduleName, stringify(obj))
   }
   
   async verifyModule()
