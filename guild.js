@@ -26,11 +26,31 @@ async function setGuildInfo(id, column, value)
     con.query(
       `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${id}`, 
       (err, result) => {
+        console.log(`Update ${result.affectedRows} row(s)`)
         return err ? reject(err) : resolve(result);
       })
   })
 }
 
+<<<<<<< Updated upstream
+=======
+function stringify(obj)
+{
+  var final = JSON.stringify(obj);
+
+  var a = 0;
+  var count = 0;
+  for (a = 0; a < JSON.stringify(obj).length; a++) {
+      if (JSON.stringify(obj).charAt(a) == "'") {
+          final = [final.slice(0, a + count), '\\', final.slice(a + count)].join('');
+          count++;
+
+      }
+  }
+  return final;
+}
+
+>>>>>>> Stashed changes
 module.exports = class Guild
 {
   constructor (guildID)
@@ -41,6 +61,11 @@ module.exports = class Guild
   get info()
   {
     return client.guilds.cache.get(this.guildID);
+  }
+
+  async updateModule(moduleName, obj)
+  {
+    return setGuildInfo(this.guildID, moduleName, stringify(obj))
   }
   
   async verifyModule()
@@ -121,4 +146,103 @@ module.exports = class Guild
 
     this.updateApps(apps);
   }
+<<<<<<< Updated upstream
+=======
+
+  async banUser(userID, username, tag, time)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.bans)
+    {
+      mod.bans = {};
+    }
+
+    var date;
+
+    if(time == 'infinite')
+    {
+      date = time;
+    }
+    else{
+      date = time + Date.now();
+    }
+
+    let bans = mod.bans;
+
+    bans[userID] = 
+    {
+      "time": date,
+      "username": username,
+      "discriminator": tag
+    };
+
+    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async unbanUser(userID)
+  {
+    let mod = await this.modModule();
+    username, tag
+    delete bans[userID];
+
+    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async muteUser(userID, time)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.mutes)
+    {
+      mod.mutes = {};
+    }
+
+    let mutes = mod.mutes;
+
+    var date;
+
+    if(time == 'infinite')
+    {
+      date = time;
+    }
+    else{
+      date = time + Date.now();
+    }
+
+    mutes[userID] = date;
+
+    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async unmuteUser(userID)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.mutes)
+    {
+      mod.mutes = {};
+    }
+
+    let mutes = mod.mutes;
+
+    delete mutes[userID];
+
+    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async getBans()
+  {
+    let mod = await this.modModule();
+
+    return mod.bans;
+  }
+
+  async getMutes()
+  {
+    let mod = await this.modModule();
+
+    return mod.mutes;
+  }
+>>>>>>> Stashed changes
 }
