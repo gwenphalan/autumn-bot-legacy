@@ -112,7 +112,9 @@ module.exports = class Guild
 
     apps[messageID] = {"userID": userID, "userApp": messageContent};
 
-    this.updateApps(apps);
+    var result = this.updateApps(apps);
+
+    return result;
   }
 
   async deleteApplication(messageID)

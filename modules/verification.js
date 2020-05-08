@@ -107,7 +107,9 @@ client.on("message", async (message) => {
                 .catch(console.error)
                 .then(message => message.delete());
 
-            await GuildOBJ.createApplication(msg.id, message.author.id, message.content)
+            var result = await GuildOBJ.createApplication(msg.id, message.author.id, message.content)
+
+            console.log(result);
 
             msg.react(accept).then(() =>
                 msg.react(deny)
