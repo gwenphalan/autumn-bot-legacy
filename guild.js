@@ -221,6 +221,33 @@ module.exports = class Guild
     setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
+  async warnUser(userID, warnID, reason, avatar, username, tag)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.warns)
+    {
+      mod.warns = {};
+    }
+
+    let warns = mod.warns;
+
+    var date = Date.now() + 2592000000;
+
+    warns[warnID] = 
+    {
+      user: userID,
+      time: date,
+      date: Date.now(),
+      reason: reason,
+      avatar: avatar,
+      username: username, 
+      tag: tag
+    };
+
+    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
   async unmuteUser(userID)
   {
     let mod = await this.modModule();
@@ -241,13 +268,41 @@ module.exports = class Guild
   {
     let mod = await this.modModule();
 
-    return mod.bans;
+    if(!mod.bans)
+    {
+      mod.bans = {};
+    }
+
+    let bans = mod.bans;
+
+    return bans;
   }
 
   async getMutes()
   {
     let mod = await this.modModule();
 
-    return mod.mutes;
+    if(!mod.mutes)
+    {
+      mod.mutes = {};
+    }
+
+    let mutes = mod.mutes;
+
+    return mutes;
+  }
+
+  async getWarns()
+  {
+    let mod = await this.modModule();
+
+    if(!mod.warns)
+    {
+      mod.warns = {};
+    }
+
+    let warns = mod.warns;
+
+    return warns;
   }
 }

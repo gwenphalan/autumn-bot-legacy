@@ -108,7 +108,7 @@ module.exports = class ClassName extends commando.Command {
             }
 
             msg.channel.send(`Muting \`${user.user.tag}\` for reason: \`${str}\``);
-            guild.muteUser(user.id, "infinite");
+            guild.muteUser(user.id, "infinite", str, user.user.displayAvatarURL().replace('webp', 'png'), user.user.username, user.user.discriminator);
         }
         else {
             if (timestring(time) < 30) {

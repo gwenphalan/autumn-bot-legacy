@@ -6,17 +6,16 @@ const cron = require('node-cron');
 
 console.log('MOD MODULE ON')
 
-cron.schedule('* * * * * *', async () => {
+cron.schedule('*/30 * * * * *', async () => {
     guilds = client.guilds.cache;
 
     guilds.each(async(guild) => {
         var guildOBJ = new Guild(guild.id)
 
         var mod = await guildOBJ.modModule()
-
         if(mod.enabled)
         {
-            var bans = await guildOBJ.getBans();
+            var bans = mod.bans;
 
             for(const userID in bans)
             {
@@ -26,6 +25,19 @@ cron.schedule('* * * * * *', async () => {
                 {
                     guild.members.unban(userID);
                     guildOBJ.unbanUser(userID);
+                }
+            }
+
+            var mutes = mod.mutes;
+
+            for(const userID in mutes)
+            {
+                var mute = mutes[userID];
+
+                if(mute.time <= Date.now())
+                {
+                    guild.members.cache.get(userID).roles.remove(mod.MutedRole);
+                    guildOBJ.unmuteUser(userID);
                 }
             }
         }
