@@ -107,7 +107,25 @@ client.on("message", async (message) => {
                 .catch(console.error)
                 .then(message => message.delete());
 
-            var result = await GuildOBJ.createApplication(msg.id, message.author.id, message.content)
+            var success = false;
+
+            while(!success)
+            {
+                await GuildOBJ.createApplication(msg.id, message.author.id, message.content).then(async function() {
+                    await GuildOBJ.getApps().then(function(apps){
+                        if(!apps[msg.id])
+                        {
+                            success = false;
+                            console.log("Application Creation Failed!")
+                        }
+                        else
+                        {
+                            success = true;
+                            console.log("Application Creation Succeeded!")
+                        }
+                    })
+                })
+            }
 
             console.log(result);
 
