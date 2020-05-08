@@ -116,7 +116,7 @@ client.on("message", async (message) => {
                         if(!apps[msg.id])
                         {
                             success = false;
-                            console.log("Application Creation Failed!")
+                            console.log("Application Creation Failed... Trying Again!")
                         }
                         else
                         {
@@ -126,8 +126,6 @@ client.on("message", async (message) => {
                     })
                 })
             }
-
-            console.log(result);
 
             msg.react(accept).then(() =>
                 msg.react(deny)
