@@ -9,7 +9,7 @@ console.log("VERIFICAITON MODULE ON")
 client.on("guildMemberAdd", async (member) => {
     let GuildOBJ = new Guild(member.guild.id)
 
-    var verifyModule = await GuildOBJ.verifyModule();
+    var verifyModule = GuildOBJ.VerifyModule;
 
     if (verifyModule.enabled) {
         var nonVerifiedRole = verifyModule.NonVerifiedRole;
@@ -29,7 +29,7 @@ client.on("message", async (message) => {
 
         const GuildOBJ = new Guild(message.guild.id);
 
-        let verifyModule = await GuildOBJ.verifyModule();
+        let verifyModule = GuildOBJ.VerifyModule;
 
         if (verifyModule == null) {
             var sql = `INSERT INTO guildsettings (Guild, VerifyModule, VerifyApps) VALUES ('${message.guild.id}', '{"enabled":false}', '{}')`;
@@ -109,23 +109,7 @@ client.on("message", async (message) => {
 
             var success = false;
 
-            while(!success)
-            {
-                await GuildOBJ.createApplication(msg.id, message.author.id, message.content).then(async function() {
-                    await GuildOBJ.getApps().then(function(apps){
-                        if(!apps[msg.id])
-                        {
-                            success = false;
-                            console.log("Application Creation Failed... Trying Again!")
-                        }
-                        else
-                        {
-                            success = true;
-                            console.log("Application Creation Succeeded!")
-                        }
-                    })
-                })
-            }
+            GuildOBJ.createApplication(msg.id, message.author.id, message.content)
 
             msg.react(accept).then(() =>
                 msg.react(deny)
@@ -153,7 +137,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
     var GuildOBJ = new Guild(guild.id);
 
-    var verifyModule = await GuildOBJ.verifyModule();
+    var verifyModule = GuildOBJ.VerifyModule;
 
     if (verifyModule.enabled == false) return;
 
@@ -171,7 +155,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
         .then(channel => ModVerifyChannel = channel)
         .catch(console.error);
 
-    var apps = await GuildOBJ.getApps();
+    var apps = GuildOBJ.apps;
 
     var VerifyChannel;
 
@@ -196,7 +180,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
     if (!checkApp) return;
 
-    var app = apps[reaction.message.id];
+    var app = apps.get(reaction.message.id);
 
     function createEmbed(color, title, authorName, authorIcon, Desc) {
         return new Discord.MessageEmbed()
@@ -207,7 +191,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
             .setTimestamp()
     }
 
-    var acceptdm = createEmbed('#52eb6c', guild.name, guild.iconURL(), VerifyMessage);
+    var acceptdm = createEmbed('#52eb6c', 'Verification Application', guild.name, guild.iconURL(), VerifyMessage);
     var denydm = createEmbed('#d94a4a', 'Verification Application', guild.name, guild.iconURL(), `You have been denied for verification! Submit another application at <#${verifyModule.VerifyChannel}>`);
 
     function createApp(color, authorName, authorIcon, Desc, Footer, staffIcon) {
@@ -232,25 +216,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
     if (reaction.emoji.id == "673092790074474527") {
                    
-        var success = false;
+        GuildOBJ.deleteApplication(reaction.message.id)
 
-        while(!success)
-        {
-            await GuildOBJ.deleteApplication(reaction.message.id).then(async function() {
-                await GuildOBJ.getApps().then(function(apps){
-                    if(!apps[msg.id])
-                    {
-                        success = false;
-                        console.log("Application Deletion Failed... Trying Again!")
-                    }
-                    else
-                    {
-                        success = true;
-                        console.log("Application Deletion Succeeded!")
-                    }
-                })
-            })
-        }
         VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
             .catch(console.error);
         member.roles.remove(NonVerifiedRole, `Verification Application Approved By ${user.username}#${user.discriminator}`)
@@ -264,7 +231,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
         msg.reactions.removeAll();
 
 
-        author.send(acceptdm);
+        client.users.cache.get(app.userID).send(acceptdm);//
     } else {
         GuildOBJ.deleteApplication(reaction.message.id)
         VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null }, `Verification Application Denied By ${user.username}#${user.discriminator}`)
@@ -282,7 +249,7 @@ client.on("channelCreate", async (channel) => {
     if (channel.guild) {
         let GuildOBJ = new Guild(channel.guild.id)
 
-        let verifyModule = await GuildOBJ.verifyModule();
+        let verifyModule = GuildOBJ.VerifyModule;
 
         if (verifyModule.enabled == true) {
             channel.overwritePermissions([
