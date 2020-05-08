@@ -65,11 +65,11 @@ module.exports = class ClassName extends commando.Command {
         while(!idIsUnique)
         {
             id = makeid(5);
-            if(warns[id]) idIsUnique = true;
+            if(!warns[id]) idIsUnique = true;
         }
         
         msg.channel.send(`Warning ${user.user.tag} for reason: \`${reason}\`\nWarn ID: ${id}`);
         
-        guild.warnUser(user.id, timestring(time) * 1000);
+        guild.warnUser(user.id, id, reason, user.user.displayAvatarURL().replace('webp', 'png'), user.user.username, user.user.discriminator);
     }
 }
