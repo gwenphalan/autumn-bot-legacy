@@ -1,5 +1,17 @@
 const con = require(__dirname + '/db.js');
 const { client } = require(__dirname + "/client.js");
+const express = require('express');
+const {
+    catchAsync
+} = require(__dirname + '/utils.js');
+const bodyParser = require('body-parser');
+const app = express()
+const port = 3001
+
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
+app.use(bodyParser.json());
 
 function escapeSpecialChars(jsonString) {
   return jsonString
@@ -15,18 +27,6 @@ async function getGuildInfo(id)
     con.query(
       "SELECT * FROM guildsettings WHERE Guild = '" + id + "' LIMIT 1", 
       (err, result) => {
-        return err ? reject(err) : resolve(result);
-      })
-  })
-}
-
-async function setGuildInfo(id, column, value)
-{
-  return new Promise((resolve, reject) => {
-    con.query(
-      `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${id}`, 
-      (err, result) => {
-        console.log(`Update ${result.affectedRows} row(s)`)
         return err ? reject(err) : resolve(result);
       })
   })
@@ -50,6 +50,94 @@ function stringify(obj)
   return final;
 }
 
+async function fetchCache()
+{
+  return new Promise((resolve, reject) => {
+    con.query(
+      "SELECT * FROM guildsettings", 
+      (err, result) => {
+        return err ? reject(err) : resolve(result);
+      })
+  })
+}
+
+var cache;
+
+var appCache;
+
+async function run()
+{
+  var fetch = await fetchCache()
+
+  console.log(fetch);
+
+  var map = new Map();
+  var appMap = new Map();
+
+  fetch.forEach((guild) => {
+    let verifyModuleJSON = guild.VerifyModule;
+    let modModuleJSON = guild.ModModule;
+    let verifyAppsJSON = guild.VerifyApps;
+
+    let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
+    let modModule = JSON.parse(escapeSpecialChars(modModuleJSON));
+    let verifyApps = JSON.parse(escapeSpecialChars(verifyAppsJSON));
+
+    var settings = 
+    {
+      VerifyModule: verifyModule,
+      ModModule: modModule
+    }
+
+    var apps = new Map();
+
+    for (const app in verifyApps) {
+      var application = 
+      {
+        userID: verifyApps[app].userID,
+        userApp: verifyApps[app].userApp
+      }
+
+      apps.set(app, application);
+    }
+
+    appMap.set(guild.Guild, apps);
+
+    map.set(guild.Guild, settings);
+  })
+
+  cache = map;
+  appCache = appMap;
+
+  console.log("DATABASE CACHED");
+  console.log(appCache);
+}
+
+run();
+
+app.post('/api/update/:guildID/:module', catchAsync(async function(req, res) {
+  res.send("Webhook Received");
+  var settings = cache.get(req.params.guildID);
+  if(req.params.module == "verification")
+  {
+    settings.VerifyModule = req.body;
+  }
+  cache.set(req.params.guildID, settings);
+  console.log(cache.get(req.params.guildID))
+}))
+
+async function setGuildInfo(id, column, value)
+{
+  return new Promise((resolve, reject) => {
+    con.query(
+      `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${id}`, 
+      (err, result) => {
+        console.log(`Update ${result.affectedRows} row(s)`)
+        return err ? reject(err) : resolve(result);
+      })
+  })
+}
+
 module.exports = class Guild
 {
   constructor (guildID)
@@ -62,35 +150,24 @@ module.exports = class Guild
     return client.guilds.cache.get(this.guildID);
   }
 
+  get ModModule()
+  {
+    return cache.get(this.guildID).ModModule;
+  }
+
+  get VerifyModule()
+  {
+    return cache.get(this.guildID).VerifyModule;
+  }
+
+  get apps()
+  {
+    return appCache.get(this.guildID);
+  }
+
   async updateModule(moduleName, obj)
   {
     return setGuildInfo(this.guildID, moduleName, stringify(obj))
-  }
-  
-  async verifyModule()
-  {
-    let guild = await getGuildInfo(this.guildID);
-    
-    if(!guild[0]) return null;
-
-    let verifyModuleJSON = guild[0].VerifyModule;
-
-    let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
-    
-    return verifyModule;
-  }
-
-  async modModule()
-  {
-    let guild = await getGuildInfo(this.guildID);
-    
-    if(!guild[0]) return null;
-
-    let verifyModuleJSON = guild[0].ModModule;
-
-    let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
-    
-    return verifyModule;
   }
 
   async getApps()
@@ -115,9 +192,9 @@ module.exports = class Guild
 
   async checkApp(messageID)
   {
-    let apps = await this.getApps();
+    var apps = appCache.get(this.guildID);
 
-    let app = apps[messageID];
+    let app = apps.get(messageID);
 
     if(app)
     {
@@ -133,6 +210,12 @@ module.exports = class Guild
   {
     let apps = await this.getApps();
 
+    var apps1 = appCache.get(this.guildID);
+
+    apps1.set(messageID, {userID: userID, userApp: messageContent});
+
+    appCache.set(this.guildID, apps1);
+
     apps[messageID] = {"userID": userID, "userApp": messageContent};
 
     this.updateApps(apps);
@@ -142,14 +225,20 @@ module.exports = class Guild
   {
     let apps = await this.getApps();
 
+    var apps1 = appCache.get(this.guildID);
+
     delete apps[messageID]
+
+    apps1.delete(messageID);
+
+    appCache.set(this.guildID, apps1);
 
     this.updateApps(apps);
   }
 
   async banUser(userID, username, tag, time)
   {
-    let mod = await this.modModule();
+    let mod = this.ModModule;
 
     if(!mod.bans)
     {
@@ -175,6 +264,12 @@ module.exports = class Guild
       "discriminator": tag
     };
 
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
     await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
@@ -183,6 +278,12 @@ module.exports = class Guild
     let mod = await this.modModule();
     username, tag
     delete bans[userID];
+
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
 
     setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
@@ -218,6 +319,12 @@ module.exports = class Guild
       tag: tag
     };
 
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
     setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
@@ -244,6 +351,12 @@ module.exports = class Guild
       username: username, 
       tag: tag
     };
+
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
 
     setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
@@ -306,3 +419,5 @@ module.exports = class Guild
     return warns;
   }
 }
+
+app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
