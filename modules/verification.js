@@ -231,7 +231,26 @@ client.on('messageReactionAdd', async (reaction, user) => {
     var denied = createApp('#d94a4a', author.tag, author.displayAvatarURL().replace('webp', 'png'), `${app.userApp}`, `Denied By ${user.username}#${user.discriminator}`, user.displayAvatarURL().replace('webp', 'png'));
 
     if (reaction.emoji.id == "673092790074474527") {
-        GuildOBJ.deleteApplication(reaction.message.id);
+                   
+        var success = false;
+
+        while(!success)
+        {
+            await GuildOBJ.deleteApplication(reaction.message.id).then(async function() {
+                await GuildOBJ.getApps().then(function(apps){
+                    if(!apps[msg.id])
+                    {
+                        success = false;
+                        console.log("Application Deletion Failed... Trying Again!")
+                    }
+                    else
+                    {
+                        success = true;
+                        console.log("Application Deletion Succeeded!")
+                    }
+                })
+            })
+        }
         VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
             .catch(console.error);
         member.roles.remove(NonVerifiedRole, `Verification Application Approved By ${user.username}#${user.discriminator}`)
