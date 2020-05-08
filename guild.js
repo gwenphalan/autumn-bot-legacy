@@ -1,5 +1,17 @@
 const con = require(__dirname + '/db.js');
 const { client } = require(__dirname + "/client.js");
+const express = require('express');
+const {
+    catchAsync
+} = require(__dirname + '/utils.js');
+const bodyParser = require('body-parser');
+const app = express()
+const port = 3001
+
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
+app.use(bodyParser.json());
 
 function escapeSpecialChars(jsonString) {
   return jsonString
@@ -20,12 +32,107 @@ async function getGuildInfo(id)
   })
 }
 
+function stringify(obj)
+{
+
+
+  var final = JSON.stringify(obj);
+
+  var a = 0;
+  var count = 0;
+  for (a = 0; a < JSON.stringify(obj).length; a++) {
+      if (JSON.stringify(obj).charAt(a) == "'") {
+          final = [final.slice(0, a + count), '\\', final.slice(a + count)].join('');
+          count++;
+
+      }
+  }
+  return final;
+}
+
+async function fetchCache()
+{
+  return new Promise((resolve, reject) => {
+    con.query(
+      "SELECT * FROM guildsettings", 
+      (err, result) => {
+        return err ? reject(err) : resolve(result);
+      })
+  })
+}
+
+var cache;
+
+var appCache;
+
+async function run()
+{
+  var fetch = await fetchCache()
+
+  console.log(fetch);
+
+  var map = new Map();
+  var appMap = new Map();
+
+  fetch.forEach((guild) => {
+    let verifyModuleJSON = guild.VerifyModule;
+    let modModuleJSON = guild.ModModule;
+    let verifyAppsJSON = guild.VerifyApps;
+
+    let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
+    let modModule = JSON.parse(escapeSpecialChars(modModuleJSON));
+    let verifyApps = JSON.parse(escapeSpecialChars(verifyAppsJSON));
+
+    var settings = 
+    {
+      VerifyModule: verifyModule,
+      ModModule: modModule
+    }
+
+    var apps = new Map();
+
+    for (const app in verifyApps) {
+      var application = 
+      {
+        userID: verifyApps[app].userID,
+        userApp: verifyApps[app].userApp
+      }
+
+      apps.set(app, application);
+    }
+
+    appMap.set(guild.Guild, apps);
+
+    map.set(guild.Guild, settings);
+  })
+
+  cache = map;
+  appCache = appMap;
+
+  console.log("DATABASE CACHED");
+  console.log(appCache);
+}
+
+run();
+
+app.post('/api/update/:guildID/:module', catchAsync(async function(req, res) {
+  res.send("Webhook Received");
+  var settings = cache.get(req.params.guildID);
+  if(req.params.module == "verification")
+  {
+    settings.VerifyModule = req.body;
+  }
+  cache.set(req.params.guildID, settings);
+  console.log(cache.get(req.params.guildID))
+}))
+
 async function setGuildInfo(id, column, value)
 {
   return new Promise((resolve, reject) => {
     con.query(
       `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${id}`, 
       (err, result) => {
+        console.log(`Update ${result.affectedRows} row(s)`)
         return err ? reject(err) : resolve(result);
       })
   })
@@ -42,18 +149,25 @@ module.exports = class Guild
   {
     return client.guilds.cache.get(this.guildID);
   }
-  
-  async verifyModule()
+
+  get ModModule()
   {
-    let guild = await getGuildInfo(this.guildID);
-    
-    if(!guild[0]) return null;
+    return cache.get(this.guildID).ModModule;
+  }
 
-    let verifyModuleJSON = guild[0].VerifyModule;
+  get VerifyModule()
+  {
+    return cache.get(this.guildID).VerifyModule;
+  }
 
-    let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
-    
-    return verifyModule;
+  get apps()
+  {
+    return appCache.get(this.guildID);
+  }
+
+  async updateModule(moduleName, obj)
+  {
+    return setGuildInfo(this.guildID, moduleName, stringify(obj))
   }
 
   async getApps()
@@ -71,28 +185,16 @@ module.exports = class Guild
 
   async updateApps(apps)
   {
-    var final = JSON.stringify(apps);
-
-    var a = 0;
-    var count = 0;
-    for (a = 0; a < JSON.stringify(apps).length; a++) {
-        if (JSON.stringify(apps).charAt(a) == "'") {
-            final = [final.slice(0, a + count), '\\', final.slice(a + count)].join('');
-            count++;
-
-        }
-    }
-
-    var result = await setGuildInfo(this.guildID, "VerifyApps", final);
+    var result = await setGuildInfo(this.guildID, "VerifyApps", stringify(apps));
 
     return result;
   }
 
   async checkApp(messageID)
   {
-    let apps = await this.getApps();
+    var apps = appCache.get(this.guildID);
 
-    let app = apps[messageID];
+    let app = apps.get(messageID);
 
     if(app)
     {
@@ -106,25 +208,216 @@ module.exports = class Guild
 
   async createApplication(messageID, userID, messageContent)
   {
-    console.log(`Creating Application...\nGuild: ${this.guildID}\nmessageID: ${messageID}\nuserID: ${userID}\nmessageContent:'${messageContent}'`)
-
     let apps = await this.getApps();
+
+    var apps1 = appCache.get(this.guildID);
+
+    apps1.set(messageID, {userID: userID, userApp: messageContent});
+
+    appCache.set(this.guildID, apps1);
 
     apps[messageID] = {"userID": userID, "userApp": messageContent};
 
-    var result = this.updateApps(apps);
-
-    return result;
+    this.updateApps(apps);
   }
 
   async deleteApplication(messageID)
   {
-    console.log(`Deleting Application...\nGuild: ${this.guildID}\nmessageID: ${messageID}`)
-
     let apps = await this.getApps();
+
+    var apps1 = appCache.get(this.guildID);
 
     delete apps[messageID]
 
+    apps1.delete(messageID);
+
+    appCache.set(this.guildID, apps1);
+
     this.updateApps(apps);
   }
+
+  async banUser(userID, username, tag, time)
+  {
+    let mod = this.ModModule;
+
+    if(!mod.bans)
+    {
+      mod.bans = {};
+    }
+
+    var date;
+
+    if(time == 'infinite')
+    {
+      date = time;
+    }
+    else{
+      date = time + Date.now();
+    }
+
+    let bans = mod.bans;
+
+    bans[userID] = 
+    {
+      "time": date,
+      "username": username,
+      "discriminator": tag
+    };
+
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
+    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async unbanUser(userID)
+  {
+    let mod = await this.modModule();
+    username, tag
+    delete bans[userID];
+
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
+    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async muteUser(userID, time, reason, avatar, username, tag)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.mutes)
+    {
+      mod.mutes = {};
+    }
+
+    let mutes = mod.mutes;
+
+    var date;
+
+    if(time == 'infinite')
+    {
+      date = time;
+    }
+    else{
+      date = time + Date.now();
+    }
+
+    mutes[userID] = 
+    {
+      time: date,
+      date: Date.now(),
+      reason: reason,
+      avatar: avatar,
+      username: username, 
+      tag: tag
+    };
+
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
+    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async warnUser(userID, warnID, reason, avatar, username, tag)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.warns)
+    {
+      mod.warns = {};
+    }
+
+    let warns = mod.warns;
+
+    var date = Date.now() + 2592000000;
+
+    warns[warnID] = 
+    {
+      user: userID,
+      time: date,
+      date: Date.now(),
+      reason: reason,
+      avatar: avatar,
+      username: username, 
+      tag: tag
+    };
+
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
+    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async unmuteUser(userID)
+  {
+    let mod = await this.modModule();
+
+    if(!mod.mutes)
+    {
+      mod.mutes = {};
+    }
+
+    let mutes = mod.mutes;
+
+    delete mutes[userID];
+
+    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async getBans()
+  {
+    let mod = await this.modModule();
+
+    if(!mod.bans)
+    {
+      mod.bans = {};
+    }
+
+    let bans = mod.bans;
+
+    return bans;
+  }
+
+  async getMutes()
+  {
+    let mod = await this.modModule();
+
+    if(!mod.mutes)
+    {
+      mod.mutes = {};
+    }
+
+    let mutes = mod.mutes;
+
+    return mutes;
+  }
+
+  async getWarns()
+  {
+    let mod = await this.modModule();
+
+    if(!mod.warns)
+    {
+      mod.warns = {};
+    }
+
+    let warns = mod.warns;
+
+    return warns;
+  }
 }
+
+app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
