@@ -31,8 +31,6 @@ client.on("guildCreate", async function (guild) {
 
   var guildInfo = new Guild(guild.id);
 
-  console.log(guild);
-
   guildInfo.cacheGuild();
   
   var sql = `INSERT INTO guildsettings (Guild, VerifyModule, ModModule, VerifyApps) VALUES ('${guild.id}', '{"enabled":false}', '{"enabled":false}', '{}')`;
