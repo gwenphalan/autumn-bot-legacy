@@ -29,9 +29,9 @@ client.on("guildCreate", async function (guild) {
     }
   }).then(() => console.log('Status Set'));
 
-  var guild = new Guild(guild.id);
+  var guildInfo = new Guild(guild.id);
 
-  guild.cacheGuild();
+  guildInfo.cacheGuild();
 
   var sql = `INSERT INTO guildsettings (Guild, VerifyModule, ModModule, VerifyApps) VALUES ('${guild.id}', '{"enabled":false}', '{"enabled":false}', '{}')`;
   con.query(sql, function (err, result) {
