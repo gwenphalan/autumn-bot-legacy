@@ -16,8 +16,8 @@ const client = new commando.Client({
 
 const dbl = new DBL(apiToken, client);
 
-const token = 'NjczNDI0MTkzODYxMTg5NjYx.XrLf6g.13JuyJLvzFXcK9Q3LOS_AC_V3c8';
-//const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XmPydA.C2hThK98Sz-r5t3jpOpeByFvkjY';
+//const token = 'NjczNDI0MTkzODYxMTg5NjYx.XrLf6g.13JuyJLvzFXcK9Q3LOS_AC_V3c8';
+const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XmPydA.C2hThK98Sz-r5t3jpOpeByFvkjY';
 
 client.on("ready", () => {
   console.log("Loading...");
