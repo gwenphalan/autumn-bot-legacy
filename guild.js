@@ -150,7 +150,7 @@ async function setGuildInfo(id, column, value)
   })
 }
 
-module.exports = class Guild
+class Guild
 {
   constructor (guildID)
   {
@@ -459,6 +459,11 @@ module.exports = class Guild
 
     return warns;
   }
+}
+
+module.exports = {
+  Guild: Guild,
+  router: router
 }
 
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
