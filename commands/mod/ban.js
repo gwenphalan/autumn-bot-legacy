@@ -42,7 +42,7 @@ module.exports = class ClassName extends commando.Command {
     async run(msg, {user, banTime, reason}) {
         var guild = new Guild(msg.guild.id);
 
-        var mod = await guild.modModule();
+        var mod = await guild.ModModule;
 
         var time = banTime;
 

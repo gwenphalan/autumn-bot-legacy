@@ -12,7 +12,8 @@ cron.schedule('*/30 * * * * *', async () => {
     guilds.each(async(guild) => {
         var guildOBJ = new Guild(guild.id)
 
-        var mod = await guildOBJ.modModule()
+        var mod = guildOBJ.ModModule;
+        
         if(mod.enabled)
         {
             var bans = mod.bans;

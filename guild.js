@@ -138,6 +138,18 @@ async function setGuildInfo(id, column, value)
   })
 }
 
+async function setGuildInfo(id, column, value)
+{
+  return new Promise((resolve, reject) => {
+    con.query(
+      `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${id}`, 
+      (err, result) => {
+        console.log(`Update ${result.affectedRows} row(s)`)
+        return err ? reject(err) : resolve(result);
+      })
+  })
+}
+
 module.exports = class Guild
 {
   constructor (guildID)
@@ -275,8 +287,8 @@ module.exports = class Guild
 
   async unbanUser(userID)
   {
-    let mod = await this.modModule();
-    username, tag
+    let mod = this.ModModule;
+    
     delete bans[userID];
 
     var settings = cache.get(this.guildID);
@@ -290,7 +302,7 @@ module.exports = class Guild
 
   async muteUser(userID, time, reason, avatar, username, tag)
   {
-    let mod = await this.modModule();
+    let mod = this.ModModule;
 
     if(!mod.mutes)
     {
@@ -330,7 +342,7 @@ module.exports = class Guild
 
   async warnUser(userID, warnID, reason, avatar, username, tag)
   {
-    let mod = await this.modModule();
+    var mod = this.ModModule;
 
     if(!mod.warns)
     {
@@ -363,7 +375,7 @@ module.exports = class Guild
 
   async unmuteUser(userID)
   {
-    let mod = await this.modModule();
+    let mod = this.ModModule;
 
     if(!mod.mutes)
     {
@@ -372,14 +384,42 @@ module.exports = class Guild
 
     let mutes = mod.mutes;
 
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
     delete mutes[userID];
+
+    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async unwarnUser(warnID)
+  {
+    let mod = this.ModModule;
+
+    if(!mod.warns)
+    {
+      mod.warns = {};
+    }
+
+    let warns = mod.warns;
+
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
+    delete warns[warnID];
 
     await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
   async getBans()
   {
-    let mod = await this.modModule();
+    let mod = this.ModModule;
 
     if(!mod.bans)
     {
@@ -391,9 +431,10 @@ module.exports = class Guild
     return bans;
   }
 
+
   async getMutes()
   {
-    let mod = await this.modModule();
+    let mod = this.ModModule;
 
     if(!mod.mutes)
     {
@@ -407,7 +448,7 @@ module.exports = class Guild
 
   async getWarns()
   {
-    let mod = await this.modModule();
+    let mod = this.ModModule;
 
     if(!mod.warns)
     {

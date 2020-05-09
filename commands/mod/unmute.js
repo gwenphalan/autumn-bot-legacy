@@ -37,7 +37,7 @@ module.exports = class ClassName extends commando.Command {
 
         var guild = new Guild(msg.guild.id);
 
-        var mod = await guild.modModule();
+        var mod = guild.ModModule;
 
         var mutes = await guild.getMutes();
 

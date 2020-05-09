@@ -46,7 +46,7 @@ module.exports = class ClassName extends commando.Command {
     async run(msg, {user, reason}) {
         var guild = new Guild(msg.guild.id);
 
-        var mod = await guild.modModule();
+        var mod = guild.ModModule;
 
         var warns = guild.getWarns();
 
