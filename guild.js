@@ -111,13 +111,14 @@ async function run()
 run();
 
 router.post('/api/update/:guildID/:module', catchAsync(async function(req, res) {
-  res.send("Webhook Received");
   var settings = cache.get(req.params.guildID);
   if(req.params.module == "verification")
   {
     settings.VerifyModule = req.body;
   }
   cache.set(req.params.guildID, settings);
+  console.log(req.body)
+  res.send("Webhook Received");
 }))
 
 async function setGuildInfo(id, column, value)

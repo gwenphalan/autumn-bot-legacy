@@ -15,6 +15,10 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.use(router);
 
+app.get('/',function(req, res){
+  res.redirect('https://www.autumnbot.net/');
+})
+
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
 
 client.on("guildCreate", async function (guild) {
