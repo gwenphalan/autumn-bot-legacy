@@ -5,15 +5,11 @@ const {
     catchAsync
 } = require(__dirname + '/utils.js');
 const bodyParser = require('body-parser');
-const app = express()
-const port = 3001
 
 var router = express.Router();
 
-app.use(bodyParser.urlencoded({
-  extended: false
-}));
-app.use(bodyParser.json());
+router.use(bodyParser)
+
 
 function escapeSpecialChars(jsonString) {
   return jsonString
@@ -124,8 +120,6 @@ router.post('/api/update/:guildID/:module', catchAsync(async function(req, res) 
   cache.set(req.params.guildID, settings);
 }))
 
-app.use(router);
-
 async function setGuildInfo(id, column, value)
 {
   return new Promise((resolve, reject) => {
@@ -138,7 +132,7 @@ async function setGuildInfo(id, column, value)
   })
 }
 
-module.exports = class Guild
+class Guild
 {
   constructor (guildID)
   {
@@ -420,4 +414,7 @@ module.exports = class Guild
   }
 }
 
-app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
+module.exports = {
+  Guild: Guild,
+  router: router
+}

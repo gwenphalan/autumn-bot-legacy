@@ -2,7 +2,7 @@
 const { client } = require("../client.js");
 const Discord = require('discord.js');
 const con = require('../db.js');
-const Guild = require('../guild.js');
+const { Guild } = require('../guild.js');
 
 console.log("VERIFICAITON MODULE ON")
 
