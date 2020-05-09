@@ -7,9 +7,10 @@ const {
 const bodyParser = require('body-parser');
 
 var router = express.Router();
-
-router.use(bodyParser)
-
+router.use(bodyParser.urlencoded({
+  extended: false
+}));
+router.use(bodyParser.json());
 
 function escapeSpecialChars(jsonString) {
   return jsonString
