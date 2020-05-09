@@ -109,23 +109,7 @@ client.on("message", async (message) => {
 
             var success = false;
 
-            while(!success)
-            {
-                await GuildOBJ.createApplication(msg.id, message.author.id, message.content).then(async function() {
-                    await GuildOBJ.getApps().then(function(apps){
-                        if(!apps[msg.id])
-                        {
-                            success = false;
-                            console.log("Application Creation Failed... Trying Again!")
-                        }
-                        else
-                        {
-                            success = true;
-                            console.log("Application Creation Succeeded!")
-                        }
-                    })
-                })
-            }
+            await GuildOBJ.createApplication(msg.id, message.author.id, message.content)
 
             msg.react(accept).then(() =>
                 msg.react(deny)
@@ -234,23 +218,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
                    
         var success = false;
 
-        while(!success)
-        {
-            await GuildOBJ.deleteApplication(reaction.message.id).then(async function() {
-                await GuildOBJ.getApps().then(function(apps){
-                    if(!apps[msg.id])
-                    {
-                        success = false;
-                        console.log("Application Deletion Failed... Trying Again!")
-                    }
-                    else
-                    {
-                        success = true;
-                        console.log("Application Deletion Succeeded!")
-                    }
-                })
-            })
-        }
+        await GuildOBJ.deleteApplication(reaction.message.id)
         VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
             .catch(console.error);
         member.roles.remove(NonVerifiedRole, `Verification Application Approved By ${user.username}#${user.discriminator}`)
