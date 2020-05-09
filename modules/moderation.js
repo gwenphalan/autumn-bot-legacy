@@ -1,7 +1,7 @@
 const { client } = require("../client.js");
 const Discord = require('discord.js');
 const con = require('../db.js');
-const Guild = require('../guild.js');
+const { Guild } = require('../guild.js');
 const cron = require('node-cron');
 
 console.log('MOD MODULE ON')

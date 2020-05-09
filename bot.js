@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const verification = require(__dirname + "/modules/verification.js");
 const express = require('express');
 const app = express();
-const port = process.env['PORT'] || 3000;
+const port = process.env['PORT'] || 3001;
 
 app.use(bodyParser.urlencoded({
   extended: false
@@ -19,7 +19,7 @@ app.get('/',function(req, res){
   res.redirect('https://www.autumnbot.net/');
 })
 
-app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
+app.listen(port)
 
 client.on("guildCreate", async function (guild) {
   await client.user.setPresence({
@@ -29,9 +29,11 @@ client.on("guildCreate", async function (guild) {
     }
   }).then(() => console.log('Status Set'));
 
-  var guild = new Guild(guild.id);
+  var guildInfo = new Guild(guild.id);
 
-  guild.cacheGuild();
+  console.log(guild);
+
+  guildInfo.cacheGuild();
   
   var sql = `INSERT INTO guildsettings (Guild, VerifyModule, ModModule, VerifyApps) VALUES ('${guild.id}', '{"enabled":false}', '{"enabled":false}', '{}')`;
   con.query(sql, function (err, result) {

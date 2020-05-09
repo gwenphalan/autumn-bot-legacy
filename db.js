@@ -1,10 +1,21 @@
 const mysql = require('mysql');
 
+const settings = require(__dirname + '/settings/settings.js');
+
+if(settings.beta)
+{
+  var database = settings.db_beta_database;
+}
+else
+{
+  var database = settings.db_database;
+}
+
 var con = mysql.createConnection({
-  host: "webserver3.pebblehost.com",
-  user: "autumnfo_admin",
-  password: "9p4kd%DkOw96",
-  database: "autumnfo_discordbot",
+  host: settings.db_host,
+  user: settings.db_user,
+  password: settings.db_password,
+  database: database,
   charset : 'utf8mb4'
 });
 

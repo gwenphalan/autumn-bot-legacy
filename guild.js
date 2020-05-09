@@ -465,5 +465,3 @@ module.exports = {
   Guild: Guild,
   router: router
 }
-
-app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
