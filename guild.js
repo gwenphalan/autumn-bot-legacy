@@ -161,6 +161,21 @@ class Guild
     return appCache.get(this.guildID);
   }
 
+  async cacheGuild()
+  {
+    cache.set(this.guildID, 
+      {
+        VerifyModule: {
+          enabled: false
+        },
+        ModModule: {
+          enabled: false
+        }
+      });
+
+    appCache.set(this.guildID, {});
+  }
+
   async updateModule(moduleName, obj)
   {
     return setGuildInfo(this.guildID, moduleName, stringify(obj))
