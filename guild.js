@@ -5,13 +5,12 @@ const {
     catchAsync
 } = require(__dirname + '/utils.js');
 const bodyParser = require('body-parser');
-const app = express()
-const port = 3001
 
-app.use(bodyParser.urlencoded({
+var router = express.Router();
+router.use(bodyParser.urlencoded({
   extended: false
 }));
-app.use(bodyParser.json());
+router.use(bodyParser.json());
 
 function escapeSpecialChars(jsonString) {
   return jsonString
@@ -69,8 +68,6 @@ async function run()
 {
   var fetch = await fetchCache()
 
-  console.log(fetch);
-
   var map = new Map();
   var appMap = new Map();
 
@@ -110,33 +107,20 @@ async function run()
   appCache = appMap;
 
   console.log("DATABASE CACHED");
-  console.log(appCache);
 }
 
 run();
 
-app.post('/api/update/:guildID/:module', catchAsync(async function(req, res) {
-  res.send("Webhook Received");
+router.post('/api/update/:guildID/:module', catchAsync(async function(req, res) {
   var settings = cache.get(req.params.guildID);
   if(req.params.module == "verification")
   {
     settings.VerifyModule = req.body;
   }
   cache.set(req.params.guildID, settings);
-  console.log(cache.get(req.params.guildID))
+  console.log(req.body)
+  res.send("Webhook Received");
 }))
-
-async function setGuildInfo(id, column, value)
-{
-  return new Promise((resolve, reject) => {
-    con.query(
-      `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${id}`, 
-      (err, result) => {
-        console.log(`Update ${result.affectedRows} row(s)`)
-        return err ? reject(err) : resolve(result);
-      })
-  })
-}
 
 async function setGuildInfo(id, column, value)
 {
