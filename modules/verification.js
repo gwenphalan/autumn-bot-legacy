@@ -45,10 +45,7 @@ client.on("message", async (message) => {
 
             var msgChannel = message.channel.id;
             var author = message.author;
-            var member = message.member;
             var guild = message.guild;
-
-            var userDM = client.users.cache.get(author.id);
 
             var VerifyChannel;
 

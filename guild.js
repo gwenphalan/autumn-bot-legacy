@@ -8,6 +8,8 @@ const bodyParser = require('body-parser');
 const app = express()
 const port = 3001
 
+var router = express.Router();
+
 app.use(bodyParser.urlencoded({
   extended: false
 }));
@@ -69,8 +71,6 @@ async function run()
 {
   var fetch = await fetchCache()
 
-  console.log(fetch);
-
   var map = new Map();
   var appMap = new Map();
 
@@ -110,12 +110,11 @@ async function run()
   appCache = appMap;
 
   console.log("DATABASE CACHED");
-  console.log(appCache);
 }
 
 run();
 
-app.post('/api/update/:guildID/:module', catchAsync(async function(req, res) {
+router.post('/api/update/:guildID/:module', catchAsync(async function(req, res) {
   res.send("Webhook Received");
   var settings = cache.get(req.params.guildID);
   if(req.params.module == "verification")
@@ -123,8 +122,9 @@ app.post('/api/update/:guildID/:module', catchAsync(async function(req, res) {
     settings.VerifyModule = req.body;
   }
   cache.set(req.params.guildID, settings);
-  console.log(cache.get(req.params.guildID))
 }))
+
+app.use(router);
 
 async function setGuildInfo(id, column, value)
 {
