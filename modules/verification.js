@@ -191,7 +191,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
             .setTimestamp()
     }
 
-    var acceptdm = createEmbed('#52eb6c', guild.name, guild.iconURL(), VerifyMessage);
+    var acceptdm = createEmbed('#52eb6c', 'Verification Application', guild.name, guild.iconURL(), VerifyMessage);
     var denydm = createEmbed('#d94a4a', 'Verification Application', guild.name, guild.iconURL(), `You have been denied for verification! Submit another application at <#${verifyModule.VerifyChannel}>`);
 
     function createApp(color, authorName, authorIcon, Desc, Footer, staffIcon) {
