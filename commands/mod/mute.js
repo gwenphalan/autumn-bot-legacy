@@ -2,7 +2,25 @@ const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
 const timestring = require('timestring');
 const prettyMs = require('pretty-ms');
-const Guild = require('../../guild.js');
+const { Guild } = require('../../guild.js');
+const Discord = require('discord.js');
+
+function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
+function memberFilterInexact(search) {
+	return mem => mem.user.username.toLowerCase().includes(search) ||
+		(mem.nickname && mem.nickname.toLowerCase().includes(search)) ||
+        `${mem.user.username.toLowerCase()}#${mem.user.discriminator}`.includes(search) ||
+        search.includes(mem.user.id);
+}
 
 module.exports = class ClassName extends commando.Command {
     constructor(client) {
@@ -15,13 +33,14 @@ module.exports = class ClassName extends commando.Command {
             details: oneLine`
             Mutes the targetted user for a specific amount of time.
             `,
-            examples: ['-ban @user#1234 30m "Annoying"'],
+            examples: ['-mute @user#1234 30m "Annoying"'],
 
             args: [
                 {
-                    key: 'user',
+                    key: 'member',
                     prompt: 'Who would you like to mute?',
-                    type: 'member'
+                    type: 'string',
+                    default: ''
                 },
                 {
                     key: 'muteTime',
@@ -39,7 +58,7 @@ module.exports = class ClassName extends commando.Command {
         })
     }
 
-    async run(msg, { user, muteTime, reason }) {
+    async run(msg, { member, muteTime, reason }) {
 
         var guild = new Guild(msg.guild.id);
 
@@ -49,16 +68,70 @@ module.exports = class ClassName extends commando.Command {
 
         if (mod.enabled == false) return;
 
+        if(!msg.member.roles.cache.has(mod.StaffRole))
+        {
+            msg.channel.send("You do not have permission to run this command!");
+            return;
+        }
+
+        if(member === '')
+        {
+            var d = new Discord.MessageEmbed()
+            .setTitle('ERROR: \`No Member Provided\`')
+            .setDescription(`**Command Usage**\n-mute {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
+            msg.channel.send(d);
+            return
+        }
+
+        var validTime = true;
+
         try {
             timestring(time);
         }
         catch (err) {
-            if (err) {
-                time = 'infinite'
+            if (err && muteTime != 'infinite') {
+                validTime = false;
             }
         }
 
-        if(!user.bannable)
+        if(!validTime)
+        {
+            var b = new Discord.MessageEmbed()
+            .setTitle(`ERROR: \`Invalid Time String '${muteTime}'\``)
+            .setDescription(`**Command Usage**\n-mute {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
+            msg.channel.send(b);
+            return
+        }
+
+        var members = msg.guild.members.cache;
+        
+        var result = members.filter(memberFilterInexact(member))
+
+        var user = result.first();
+
+        if(result.size > 1)
+        {
+            var str = '';
+
+            result.each(user => str += ` • <@!${user.id}>\n`)
+
+            var a = new Discord.MessageEmbed()
+            .setTitle('Uh Oh!')
+            .setDescription(`Multiple members found, please try again (and be more specific)!\n${str}`)
+            msg.channel.send(a);
+            return;
+        }
+        else if(!result.size)
+        {
+            var c = new Discord.MessageEmbed()
+            .setTitle(`ERROR: \`Invalid User '${member}'\``)
+            .setDescription(`**Command Usage**\n-mute {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
+            msg.channel.send(c);
+            return
+        }
+        
+
+        if(!user.bannable || user.roles.cache.first().position > msg.member.roles.cache.first().position)
         {
             msg.channel.send(`You cannot mute this user!`);
             return;
@@ -92,6 +165,18 @@ module.exports = class ClassName extends commando.Command {
                 .catch(console.error);
         }
 
+        var id;
+
+        var idIsUnique = false;
+
+        var history = guild.getHistory(user.id);
+
+        while(!idIsUnique)
+        {
+            id = makeid(5);
+            if(!history[id]) idIsUnique = true;
+        }
+
         var str = reason;
 
         if (time == 'infinite') {
@@ -107,16 +192,87 @@ module.exports = class ClassName extends commando.Command {
                 }
             }
 
-            msg.channel.send(`Muting \`${user.user.tag}\` for reason: \`${str}\``);
-            guild.muteUser(user.id, "infinite", str, user.user.displayAvatarURL().replace('webp', 'png'), user.user.username, user.user.discriminator);
+            var response = new Discord.MessageEmbed()
+            .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+            .setTitle(`${user.user.tag} has been muted!`)
+            .setDescription(`**Reason:** ${str}\n**Duration:** Permament\n`)
+            .setThumbnail(user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }))
+            .setColor(`#db583e`)
+            .setFooter(`Muted By ${msg.author.username} | ID: ${id}`, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }))
+            .setTimestamp()
+
+            msg.channel.send(response);
+            guild.muteUser(user.id, "infinite", str, user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), msg.author.discriminator);
+
+            guild.addHistory(user.id, "infinite", id, "mute", reason, user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), msg.author.discriminator);
         }
         else {
+
+            var response = new Discord.MessageEmbed()
+            .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+            .setTitle(`${user.user.tag} has been muted!`)
+            .setDescription(`**Reason:** ${str}\n**Duration:** ${prettyMs(timestring(time) * 1000)}\n`)
+            .setThumbnail(user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }))
+            .setColor(`#db583e`)
+            .setFooter(`Muted By ${msg.author.username} | ID: ${id}`, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }))
+            .setTimestamp()
+
             if (timestring(time) < 30) {
                 msg.channel.send("You must mute the user for at least **30 seconds**.");
                 return;
             };
-            msg.channel.send(`Mute \`${user.user.tag}\` for \`${prettyMs(timestring(time) * 1000)}\` for reason: \`${str}\``);
-            guild.muteUser(user.id, timestring(time) * 1000, reason, user.user.displayAvatarURL().replace('webp', 'png'), user.user.username, user.user.discriminator);
+            msg.channel.send(response);
+            guild.muteUser(user.id, timestring(time) * 1000, reason, user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), msg.author.discriminator);
+
+            guild.addHistory(user.id, timestring(time) * 1000, id, "mute", reason, user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), msg.author.discriminator);
         }
 
         user.roles.add(mutedRole);

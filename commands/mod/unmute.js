@@ -2,7 +2,7 @@ const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
 const timestring = require('timestring');
 const prettyMs = require('pretty-ms');
-const Guild = require('../../guild.js');
+const { Guild } = require('../../guild.js');
 
 module.exports = class ClassName extends commando.Command {
     constructor(client) {

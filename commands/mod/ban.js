@@ -2,7 +2,25 @@ const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
 const timestring = require('timestring');
 const prettyMs = require('pretty-ms');
-const Guild = require('../../guild.js');
+const { Guild } = require('../../guild.js');
+const Discord = require('discord.js');
+
+function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
+function memberFilterInexact(search) {
+	return mem => mem.user.username.toLowerCase().includes(search) ||
+		(mem.nickname && mem.nickname.toLowerCase().includes(search)) ||
+        `${mem.user.username.toLowerCase()}#${mem.user.discriminator}`.includes(search) ||
+        search.includes(mem.user.id);
+}
 
 module.exports = class ClassName extends commando.Command {
     constructor(client) {
@@ -19,9 +37,10 @@ module.exports = class ClassName extends commando.Command {
 
             args: [
                 {
-                    key: 'user',
+                    key: 'member',
                     prompt: 'Who would you like to ban?',
-                    type: 'member'
+                    type: 'string',
+                    default: ''
                 },
                 {
                     key: 'banTime',
@@ -39,7 +58,7 @@ module.exports = class ClassName extends commando.Command {
         })
     }
 
-    async run(msg, {user, banTime, reason}) {
+    async run(msg, {member, banTime, reason}) {
         var guild = new Guild(msg.guild.id);
 
         var mod = await guild.ModModule;
@@ -47,6 +66,72 @@ module.exports = class ClassName extends commando.Command {
         var time = banTime;
 
         if(mod.enabled == false) return;
+
+        if(!msg.member.roles.cache.has(mod.StaffRole))
+        {
+            msg.channel.send("You do not have permission to run this command!");
+            return;
+        }
+
+        //Member Search & Errors
+
+        if(member === '')
+        {
+            var d = new Discord.MessageEmbed()
+            .setTitle('ERROR: \`No Member Provided\`')
+            .setDescription(`**Command Usage**\n-ban {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
+            msg.channel.send(d);
+            return
+        }
+
+        var validTime = true;
+
+        try {
+            timestring(time);
+        }
+        catch (err) {
+            if (err && banTime != 'infinite') {
+                validTime = false;
+            }
+        }
+
+        if(!validTime)
+        {
+            var b = new Discord.MessageEmbed()
+            .setTitle(`ERROR: \`Invalid Time String '${banTime}'\``)
+            .setDescription(`**Command Usage**\n-ban {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
+            msg.channel.send(b);
+            return
+        }
+
+        var members = msg.guild.members.cache;
+        
+        var result = members.filter(memberFilterInexact(member))
+
+        var user = result.first();
+
+        if(result.size > 1)
+        {
+            var str = '';
+
+            result.each(user => str += ` • <@!${user.id}>\n`)
+
+            var a = new Discord.MessageEmbed()
+            .setTitle('Uh Oh!')
+            .setDescription(`Multiple members found, please try again (and be more specific)!\n${str}`)
+            msg.channel.send(a);
+            return;
+        }
+        else if(!result.size)
+        {
+            var c = new Discord.MessageEmbed()
+            .setTitle(`ERROR: \`Invalid User '${member}'\``)
+            .setDescription(`**Command Usage**\n-ban {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
+            msg.channel.send(c);
+            return
+        }
+
+        //------------------------------------
         
         try {
             timestring(time);
@@ -58,11 +143,23 @@ module.exports = class ClassName extends commando.Command {
             }
           }
 
-        /*if(!user.bannable)
+          if(!user.bannable || user.roles.cache.first().position > msg.member.roles.cache.first().position)
         {
             msg.channel.send(`You cannot ban this user!`);
             return;
-        }*/
+        }
+
+        var id;
+
+        var idIsUnique = false;
+
+        var history = guild.getHistory(user.id);
+
+        while(!idIsUnique)
+        {
+            id = makeid(5);
+            if(!history[id]) idIsUnique = true;
+        }
 
         var str = reason;
         
@@ -82,7 +179,44 @@ module.exports = class ClassName extends commando.Command {
                 }
             }
 
-            msg.channel.send(`Banning ${user.user.tag} for reason: \`${str}\``);
+            var response = new Discord.MessageEmbed()
+            .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+            .setTitle(`${user.user.tag} has been banned!`)
+            .setDescription(`**Reason:** ${str}\n**Duration:** Permament\n`)
+            .setThumbnail(user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }))
+            .setColor(`#db583e`)
+            .setFooter(`Banned By ${msg.author.username} | ID: ${id}`, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }))
+            .setTimestamp()
+
+
+            msg.channel.send(response);
+            guild.banUser(user.id, "infinite", str, user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), msg.author.discriminator);
+
+            guild.addHistory(user.id, "infinite", id, "mute", reason, user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), msg.author.discriminator);
         }
         else
         {
@@ -90,8 +224,44 @@ module.exports = class ClassName extends commando.Command {
                 msg.channel.send("You must ban the user for at least **30 seconds**.");
                 return;
             };
-            msg.channel.send(`Banning ${user.user.tag} for \`${prettyMs(timestring(time) * 1000)}\` for reason: \`${str}\``);
-            guild.banUser(user.id, timestring(time) * 1000);
+
+            var response = new Discord.MessageEmbed()
+            .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+            .setTitle(`${user.user.tag} has been banned!`)
+            .setDescription(`**Reason:** ${str}\n**Duration:** ${prettyMs(timestring(banTime) * 1000)}\n`)
+            .setThumbnail(user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }))
+            .setColor(`#db583e`)
+            .setFooter(`Banned By ${msg.author.username} | ID: ${id}`, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }))
+            .setTimestamp()
+
+            msg.channel.send(response);
+            guild.banUser(user.id, timestring(time) * 1000, user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), msg.author.discriminator);
+
+            guild.addHistory(user.id, timestring(time) * 1000, id, "ban", reason, user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), msg.author.discriminator);
         }
 
         msg.guild.members.ban(user.id, {reason: str});

@@ -40,7 +40,11 @@ module.exports = class UserInfoCommand extends commando.Command {
          • Created at: ${user.createdAt}${user.bot ? '\n • Is a bot account' : ''}
          • Status: ${user.presence.status}
          • Game: ${user.presence.game ? user.presence.game.name : 'None'}`)
-        .setThumbnail(user.displayAvatarURL().replace('webp','png'))
+        .setThumbnail(user.displayAvatarURL({
+          format: 'png',
+          dynamic: true,
+          size: 512
+      }))
         .setFooter(`Requested By ${msg.author.tag}`)
         .setTimestamp();
 

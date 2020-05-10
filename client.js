@@ -15,9 +15,7 @@ const client = new commando.Client({
   partials: ['MESSAGE', 'REACTION']
 });
 
-if (!settings.beta) {
-  const dbl = new DBL(settings.dbl_api_token, client);
-}
+const dbl = new DBL(settings.dbl_api_token, client);
 
 if (settings.beta) {
   var token = settings.beta_token;
