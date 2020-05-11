@@ -2,14 +2,14 @@
 const { client } = require("../client.js");
 const Discord = require('discord.js');
 const con = require('../db.js');
-const { Guild } = require('../guild.js');
+const Guild = require('../guild/guild.js');
 
 console.log("VERIFICAITON MODULE ON")
 
 client.on("guildMemberAdd", async (member) => {
     let GuildOBJ = new Guild(member.guild.id)
 
-    var verifyModule = GuildOBJ.VerifyModule;
+    var verifyModule = GuildOBJ.VerifyModule.settings;
 
     if (verifyModule.enabled) {
         var nonVerifiedRole = verifyModule.NonVerifiedRole;
@@ -27,28 +27,17 @@ client.on("message", async (message) => {
             .setDescription(`This server isn't set up with the new verification dashboard yet! Contact ${message.guild.owner} and tell them to set up the Verification Module here: https://www.autumnbot.net/dashboard`)
             .setTimestamp();
 
-        const GuildOBJ = new Guild(message.guild.id);
+            let GuildOBJ = new Guild(message.guild.id)
 
-        let verifyModule = GuildOBJ.VerifyModule;
+        let verifyModule = GuildOBJ.VerifyModule.settings;
 
-        if (verifyModule == null) {
-            var sql = `INSERT INTO guildsettings (Guild, VerifyModule, VerifyApps) VALUES ('${message.guild.id}', '{"enabled":false}', '{}')`;
-            con.query(sql, function (err, result) {
-                if (err) throw err;
-                console.log("1 record inserted");
-            });
-
-            return;
-        }
+        console.log(verifyModule)
 
         if (verifyModule.enabled) {
 
             var msgChannel = message.channel.id;
             var author = message.author;
-            var member = message.member;
             var guild = message.guild;
-
-            var userDM = client.users.cache.get(author.id);
 
             var VerifyChannel;
 
@@ -107,9 +96,7 @@ client.on("message", async (message) => {
                 .catch(console.error)
                 .then(message => message.delete());
 
-            var success = false;
-
-            GuildOBJ.createApplication(msg.id, message.author.id, message.content)
+            GuildOBJ.VerifyModule.createApplication(msg.id, message.author.id, message.content)
 
             msg.react(accept).then(() =>
                 msg.react(deny)
@@ -137,7 +124,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
     var GuildOBJ = new Guild(guild.id);
 
-    var verifyModule = GuildOBJ.VerifyModule;
+    var verifyModule = GuildOBJ.VerifyModule.settings;
 
     if (verifyModule.enabled == false) return;
 
@@ -176,7 +163,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
     var VerifyMessage = verifyModule.VMessage;
 
-    var checkApp = await GuildOBJ.checkApp(reaction.message.id);
+    var checkApp = await GuildOBJ.VerifyModule.checkApp(reaction.message.id);
 
     if (!checkApp) return;
 
@@ -216,7 +203,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
     if (reaction.emoji.id == "673092790074474527") {
                    
-        GuildOBJ.deleteApplication(reaction.message.id)
+        GuildOBJ.VerifyModule.deleteApplication(reaction.message.id)
 
         VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null })
             .catch(console.error);
@@ -233,7 +220,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
         client.users.cache.get(app.userID).send(acceptdm);//
     } else {
-        GuildOBJ.deleteApplication(reaction.message.id)
+        GuildOBJ.VerifyModule.deleteApplication(reaction.message.id)
         VerifyChannel.updateOverwrite(author, { VIEW_CHANNEL: null }, `Verification Application Denied By ${user.username}#${user.discriminator}`)
             .catch(console.error);
 
@@ -249,7 +236,7 @@ client.on("channelCreate", async (channel) => {
     if (channel.guild) {
         let GuildOBJ = new Guild(channel.guild.id)
 
-        let verifyModule = GuildOBJ.VerifyModule;
+        let verifyModule = GuildOBJ.VerifyModule.settings;
 
         if (verifyModule.enabled == true) {
             channel.overwritePermissions([

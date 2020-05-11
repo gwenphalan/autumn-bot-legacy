@@ -1,12 +1,10 @@
 const mysql = require('mysql');
 
-const settings = require(__dirname + '/settings/settings.js');
-
 var con = mysql.createConnection({
-  host: settings.db_host,
-  user: settings.db_user,
-  password: settings.db_password,
-  database: settings.db_database,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
   charset : 'utf8mb4'
 });
 

@@ -1,19 +1,17 @@
 const mysql = require('mysql');
 const jsonConvert = require('./jsonConvert');
 
-const settings = require('../../../settings/settings');
-
 var con = mysql.createConnection({
-    host: settings.db_host,
-    user: settings.db_user,
-    password: settings.db_password,
-    database: settings.db_database,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
     charset: 'utf8mb4'
 });
 
 con.connect(function (err) {
     if (err) throw err;
-    console.log(`Connect To Database ${settings.db_database}`)
+    console.log(`Connect To Database ${process.env.DB_DATABASE}`)
 });
 
 class Database {
@@ -38,7 +36,7 @@ class Database {
 
         return new Promise((resolve, reject) => {
             con.query(
-                `UPDATE guildsettings SET VerifyModule = '${value}' WHERE Guild = ${guildID}`,
+                `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${guildID}`,
                 (err, result) => {
                   return err ? reject(err) : resolve(result);
                 })

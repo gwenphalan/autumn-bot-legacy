@@ -64,6 +64,8 @@ module.exports = class ClassName extends commando.Command {
 
         var mod = guild.ModModule.settings;
 
+        console.log(mod)
+
         var time = muteTime;
         //------------------------------------
         

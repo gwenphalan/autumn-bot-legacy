@@ -6,16 +6,14 @@ const MySQLProvider = require(__dirname + '/discord.js-commando-mysqlprovider');
 const oneLine = require('common-tags').oneLine;
 const DBL = require("dblapi.js");
 
-const settings = require(__dirname + '/settings/settings.js');
-
 const client = new commando.Client({
-  owner: settings.bot_owner,
-  commandPrefix: settings.bot_prefix,
-  invite: settings.bot_support_invite,
+  owner: process.env.BOT_OWNER,
+  commandPrefix: process.env.BOT_PREFIX,
+  invite: process.env.BOT_SUPPORT_INVITE,
   partials: ['MESSAGE', 'REACTION']
 });
 
-const dbl = new DBL(settings.dbl_api_token, client);
+const dbl = new DBL(process.env.DBL_API_TOKEN, client);
 
 client.on("ready", () => {
   console.log("Loading...");
@@ -86,14 +84,14 @@ client.registry
   .registerCommandsIn(path.join(__dirname, 'commands'));
 
 MySQL.createConnection({
-  host: settings.db_host,
-  user: settings.db_user,
-  password: settings.db_password,
-  database: settings.db_database,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
   charset: 'utf8mb4'
 }).then((db) => {
   client.setProvider(new MySQLProvider(db));
-  client.login(settings.bot_token);
+  client.login(process.env.BOT_TOKEN);
 });
 
 exports.client = client;
