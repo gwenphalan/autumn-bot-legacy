@@ -16,9 +16,9 @@ function makeid(length) {
 }
 
 function memberFilterInexact(search) {
-	return mem => mem.user.username.toLowerCase().includes(search) ||
-		(mem.nickname && mem.nickname.toLowerCase().includes(search)) ||
-        `${mem.user.username.toLowerCase()}#${mem.user.discriminator}`.includes(search) ||
+	return mem => mem.user.username.toLowerCase().includes(search.toLowerCase()) ||
+		(mem.nickname && mem.nickname.toLowerCase().includes(search.toLowerCase())) ||
+        `${mem.user.username.toLowerCase()}#${mem.user.discriminator}`.includes(search.toLowerCase()) ||
         search.includes(mem.user.id);
 }
 
@@ -81,26 +81,6 @@ module.exports = class ClassName extends commando.Command {
             .setTitle('ERROR: \`No Member Provided\`')
             .setDescription(`**Command Usage**\n-ban {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
             msg.channel.send(d);
-            return
-        }
-
-        var validTime = true;
-
-        try {
-            timestring(time);
-        }
-        catch (err) {
-            if (err && banTime != 'infinite') {
-                validTime = false;
-            }
-        }
-
-        if(!validTime)
-        {
-            var b = new Discord.MessageEmbed()
-            .setTitle(`ERROR: \`Invalid Time String '${banTime}'\``)
-            .setDescription(`**Command Usage**\n-ban {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
-            msg.channel.send(b);
             return
         }
 
@@ -196,6 +176,26 @@ module.exports = class ClassName extends commando.Command {
             }))
             .setTimestamp()
 
+            if(mod.ModLogEnabled)
+            {
+                var modlog = msg.guild.channels.cache.get(mod.ModLog);
+    
+                var log = new Discord.MessageEmbed()
+                .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+                .setTitle(`User Banned`)
+                .setDescription(
+                    ` • **ID:** ${id}\n` +
+                    ` • **User:** ${user}\n` +
+                    ` • **Duration:** Permanent\n` +
+                    ` • **Reason:** ${str}\n` +
+                    ` • **Banned By:** ${msg.author}\n`
+                )
+                .setColor(`#db583e`)
+                .setTimestamp()
+    
+                modlog.send(log);
+            }
+
 
             msg.channel.send(response);
             guild.banUser(user.id, "infinite", str, user.user.displayAvatarURL({
@@ -208,7 +208,7 @@ module.exports = class ClassName extends commando.Command {
                 size: 512
             }), msg.author.discriminator);
 
-            guild.addHistory(user.id, "infinite", id, "mute", reason, user.user.displayAvatarURL({
+            guild.addHistory(user.id, "infinite", id, "mute", str, user.user.displayAvatarURL({
                 format: 'png',
                 dynamic: true,
                 size: 512
@@ -241,6 +241,26 @@ module.exports = class ClassName extends commando.Command {
                 size: 512
             }))
             .setTimestamp()
+
+            if(mod.ModLogEnabled)
+            {
+                var modlog = msg.guild.channels.cache.get(mod.ModLog);
+    
+                var log = new Discord.MessageEmbed()
+                .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+                .setTitle(`User Banned`)
+                .setDescription(
+                    ` • **ID:** ${id}\n` +
+                    ` • **User:** ${user}\n` +
+                    ` • **Banned By:** ${msg.author}\n` +
+                    ` • **Duration:** ${prettyMs(timestring(banTime) * 1000)}\n` +
+                    ` • **Reason:** ${str}\n`
+                )
+                .setColor(`#db583e`)
+                .setTimestamp()
+    
+                modlog.send(log);
+            }
 
             msg.channel.send(response);
             guild.banUser(user.id, timestring(time) * 1000, user.user.displayAvatarURL({

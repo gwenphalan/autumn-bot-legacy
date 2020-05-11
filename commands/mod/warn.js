@@ -16,9 +16,9 @@ function makeid(length) {
 }
 
 function memberFilterInexact(search) {
-	return mem => mem.user.username.toLowerCase().includes(search) ||
-		(mem.nickname && mem.nickname.toLowerCase().includes(search)) ||
-        `${mem.user.username.toLowerCase()}#${mem.user.discriminator}`.includes(search) ||
+	return mem => mem.user.username.toLowerCase().includes(search.toLowerCase()) ||
+		(mem.nickname && mem.nickname.toLowerCase().includes(search.toLowerCase())) ||
+        `${mem.user.username.toLowerCase()}#${mem.user.discriminator}`.includes(search.toLowerCase()) ||
         search.includes(mem.user.id);
 }
 
@@ -105,7 +105,6 @@ module.exports = class ClassName extends commando.Command {
 
         //------------------------------------
 
-        console.log(user);
 
         if(!user.bannable || user.roles.cache.first().position > msg.member.roles.cache.first().position)
         {
@@ -141,6 +140,25 @@ module.exports = class ClassName extends commando.Command {
                 size: 512
             }))
         .setTimestamp()
+
+        if(mod.ModLogEnabled)
+        {
+            var modlog = msg.guild.channels.cache.get(mod.ModLog);
+
+            var log = new Discord.MessageEmbed()
+            .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+            .setTitle(`User Warned`)
+            .setDescription(
+                ` • **ID:** ${id}\n` +
+                ` • **User:** ${user}\n` +
+                ` • **Warned By:** ${msg.author}\n` +
+                ` • **Reason:** ${reason}\n`
+            )
+            .setColor(`#db583e`)
+            .setTimestamp()
+
+            modlog.send(log);
+        }
 
         
         msg.channel.send(response);

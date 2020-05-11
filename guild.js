@@ -1,8 +1,9 @@
 const con = require(__dirname + '/db.js');
 const { client } = require(__dirname + "/client.js");
 const express = require('express');
+const axios = require('axios');
 const {
-    catchAsync
+  catchAsync
 } = require(__dirname + '/utils.js');
 const bodyParser = require('body-parser');
 
@@ -20,19 +21,17 @@ function escapeSpecialChars(jsonString) {
     .replace(/\f/g, "\\f");
 }
 
-async function getGuildInfo(id)
-{
+async function getGuildInfo(id) {
   return new Promise((resolve, reject) => {
     con.query(
-      "SELECT * FROM guildsettings WHERE Guild = '" + id + "' LIMIT 1", 
+      "SELECT * FROM guildsettings WHERE Guild = '" + id + "' LIMIT 1",
       (err, result) => {
         return err ? reject(err) : resolve(result);
       })
   })
 }
 
-function stringify(obj)
-{
+function stringify(obj) {
 
 
   var final = JSON.stringify(obj);
@@ -40,20 +39,19 @@ function stringify(obj)
   var a = 0;
   var count = 0;
   for (a = 0; a < JSON.stringify(obj).length; a++) {
-      if (JSON.stringify(obj).charAt(a) == "'") {
-          final = [final.slice(0, a + count), '\\', final.slice(a + count)].join('');
-          count++;
+    if (JSON.stringify(obj).charAt(a) == "'") {
+      final = [final.slice(0, a + count), '\\', final.slice(a + count)].join('');
+      count++;
 
-      }
+    }
   }
   return final;
 }
 
-async function fetchCache()
-{
+async function fetchCache() {
   return new Promise((resolve, reject) => {
     con.query(
-      "SELECT * FROM guildsettings", 
+      "SELECT * FROM guildsettings",
       (err, result) => {
         return err ? reject(err) : resolve(result);
       })
@@ -64,8 +62,7 @@ var cache;
 
 var appCache;
 
-async function run()
-{
+async function run() {
   var fetch = await fetchCache()
 
   var map = new Map();
@@ -80,7 +77,7 @@ async function run()
     let modModule = JSON.parse(escapeSpecialChars(modModuleJSON));
     let verifyApps = JSON.parse(escapeSpecialChars(verifyAppsJSON));
 
-    var settings = 
+    var settings =
     {
       VerifyModule: verifyModule,
       ModModule: modModule
@@ -89,7 +86,7 @@ async function run()
     var apps = new Map();
 
     for (const app in verifyApps) {
-      var application = 
+      var application =
       {
         userID: verifyApps[app].userID,
         userApp: verifyApps[app].userApp
@@ -111,18 +108,15 @@ async function run()
 
 run();
 
-router.post('/api/update/:guildID/:module', catchAsync(async function(req, res) {
+router.post('/api/update/:guildID/:module', catchAsync(async function (req, res) {
   var settings = cache.get(req.params.guildID);
-  if(req.params.module == "verification")
-  {
+  if (req.params.module == "verification") {
     settings.VerifyModule = req.body;
   }
-  if(req.params.module == "moderation")
-  {
+  if (req.params.module == "moderation") {
     settings.ModModule = req.body;
   }
   cache.set(req.params.guildID, settings);
-  console.log(req.body)
   res.send("Webhook Received");
 }))
 
@@ -151,48 +145,78 @@ router.post('/api/revoke/:guildID/:punishment/:id', catchAsync(async function (r
   cache.set(req.params.guildID, settings);
 }))
 
-async function setGuildInfo(id, column, value)
-{
+router.post('/api/history/:action', catchAsync(async function (req, res) {
+  res.send("Webhook Received");
+
+  console.log(req.body)
+
+  var settings = cache.get(req.body.guildID);
+
+  var mod = settings.ModModule;
+
+  var history = mod.history;
+
+  if(!history)
+  {
+    history = {}
+  }
+
+  var userHistory = history[req.body.userID]
+
+  if (req.params.action == "remove") {
+    delete userHistory[req.body.id]
+  }
+  else if (req.params.action == "clear") {
+    delete history[req.body.userID]
+  }
+
+  settings.ModModule = mod;
+
+  cache.set(req.params.guildID, settings);
+}))
+
+async function setGuildInfo(id, column, value) {
   return new Promise((resolve, reject) => {
     con.query(
-      `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${id}`, 
+      `UPDATE guildsettings SET ${column} = '${value}' WHERE Guild = ${id}`,
       (err, result) => {
-        console.log(`Update ${result.affectedRows} row(s)`)
+        axios
+            .post(`http://localhost:3000/guild`)
+            .then(res => {
+                console.log("RES: " + res.data)
+            })
+            .catch(error => {
+                console.error(error)
+            })
+        console.log(`Updated ${result.affectedRows} row(s)`)
         return err ? reject(err) : resolve(result);
       })
   })
 }
 
-class Guild
-{
-  constructor (guildID)
-  {
+class Guild {
+  constructor(guildID) {
     this.guildID = guildID;
   }
-  
-  get info()
-  {
+
+  get info() {
     return client.guilds.cache.get(this.guildID);
   }
 
-  get ModModule()
-  {
+  get ModModule() {
     return cache.get(this.guildID).ModModule;
   }
 
-  get VerifyModule()
-  {
+  get VerifyModule() {
     return cache.get(this.guildID).VerifyModule;
   }
 
-  get apps()
-  {
+  get apps() {
     return appCache.get(this.guildID);
   }
 
-  async cacheGuild()
-  {
-    cache.set(this.guildID, 
+  async cacheGuild() {
+    cache.set(this.guildID,
       {
         VerifyModule: {
           enabled: false
@@ -206,64 +230,56 @@ class Guild
   }
 
 
-  async updateModule(moduleName, obj)
-  {
+  async updateModule(moduleName, obj) {
     return setGuildInfo(this.guildID, moduleName, stringify(obj))
   }
 
-  async getApps()
-  {
+  async getApps() {
     let guild = await getGuildInfo(this.guildID);
-    
-    if(!guild[0]) return null;
+
+    if (!guild[0]) return null;
 
     let verifyModuleJSON = guild[0].VerifyApps;
 
     let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
-    
+
     return verifyModule;
   }
 
-  async updateApps(apps)
-  {
+  async updateApps(apps) {
     var result = await setGuildInfo(this.guildID, "VerifyApps", stringify(apps));
 
     return result;
   }
 
-  async checkApp(messageID)
-  {
+  async checkApp(messageID) {
     var apps = appCache.get(this.guildID);
 
     let app = apps.get(messageID);
 
-    if(app)
-    {
+    if (app) {
       return true;
     }
-    else
-    {
+    else {
       return false;
     }
   }
 
-  async createApplication(messageID, userID, messageContent)
-  {
+  async createApplication(messageID, userID, messageContent) {
     let apps = await this.getApps();
 
     var apps1 = appCache.get(this.guildID);
 
-    apps1.set(messageID, {userID: userID, userApp: messageContent});
+    apps1.set(messageID, { userID: userID, userApp: messageContent });
 
     appCache.set(this.guildID, apps1);
 
-    apps[messageID] = {"userID": userID, "userApp": messageContent};
+    apps[messageID] = { "userID": userID, "userApp": messageContent };
 
     this.updateApps(apps);
   }
 
-  async deleteApplication(messageID)
-  {
+  async deleteApplication(messageID) {
     let apps = await this.getApps();
 
     var apps1 = appCache.get(this.guildID);
@@ -277,162 +293,30 @@ class Guild
     this.updateApps(apps);
   }
 
-  async banUser(userID, time, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag)
-  {
+  async banUser(userID, time, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
     let mod = this.ModModule;
 
-    if(!mod.bans)
-    {
+    if (!mod.bans) {
       mod.bans = {};
     }
 
     var date;
 
-    if(time == 'infinite')
-    {
+    if (time == 'infinite') {
       date = time;
     }
-    else{
+    else {
       date = time + Date.now();
     }
 
     let bans = mod.bans;
 
-    bans[userID] = 
+    bans[userID] =
     {
       time: date,
       date: Date.now(),
       reason: reason,
       avatar: avatar,
-      username: username, 
-      tag: tag,
-      staff: {
-        id: staffID,
-        username: staffUsername,
-        avatar: staffAvatar,
-        tag: staffTag
-      }
-    };
-
-    var settings = cache.get(this.guildID);
-
-    settings.ModModule = mod;
-
-    cache.set(this.guildID, settings);
-
-    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
-  }
-
-  async muteUser(userID, time, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag)
-  {
-    let mod = this.ModModule;
-
-    if(!mod.mutes)
-    {
-      mod.mutes = {};
-    }
-
-    let mutes = mod.mutes;
-
-    var date;
-
-    if(time == 'infinite')
-    {
-      date = time;
-    }
-    else{
-      date = time + Date.now();
-    }
-
-    mutes[userID] = 
-    {
-      time: date,
-      date: Date.now(),
-      reason: reason,
-      avatar: avatar,
-      username: username, 
-      tag: tag,
-      staff: {
-        id: staffID,
-        username: staffUsername,
-        avatar: staffAvatar,
-        tag: staffTag
-      }
-    };
-
-    var settings = cache.get(this.guildID);
-
-    settings.ModModule = mod;
-
-    cache.set(this.guildID, settings);
-
-    setGuildInfo(this.guildID, "ModModule", stringify(mod));
-  }
-
-  async warnUser(userID, warnID, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag)
-  {
-    var mod = this.ModModule;
-
-    if(!mod.warns)
-    {
-      mod.warns = {};
-    }
-
-    let warns = mod.warns;
-
-    var date = Date.now() + 2592000000;
-
-    warns[warnID] = 
-    {
-      user: userID,
-      time: date,
-      date: Date.now(),
-      reason: reason,
-      avatar: avatar,
-      username: username, 
-      tag: tag,
-      staff: {
-        id: staffID,
-        username: staffUsername,
-        avatar: staffAvatar,
-        tag: staffTag
-      }
-    };
-
-    var settings = cache.get(this.guildID);
-
-    settings.ModModule = mod;
-
-    cache.set(this.guildID, settings);
-
-    setGuildInfo(this.guildID, "ModModule", stringify(mod));
-  }
-
-  async addHistory(userID, time, id, punishment, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag)
-  {
-    let mod = this.ModModule;
-
-    if(!mod.history)
-    {
-      mod.history = {};
-    }
-
-    let history = mod.history;
-
-    if(!history[userID])
-    {
-      history[userID] = {};
-    }
-
-    let userHistory = history[userID];
-
-    userHistory[id] = {
-      id: id,
-      time: time,
-      date: Date.now(),
-      reason: reason,
-      avatar: avatar,
-      punishment: punishment,
       username: username,
       tag: tag,
       staff: {
@@ -452,19 +336,141 @@ class Guild
     await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
-  async removeHistory(userID, id)
-  {
+  async muteUser(userID, time, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
     let mod = this.ModModule;
 
-    if(!mod.history)
+    if (!mod.mutes) {
+      mod.mutes = {};
+    }
+
+    let mutes = mod.mutes;
+
+    var date;
+
+    if (time == 'infinite') {
+      date = time;
+    }
+    else {
+      date = time + Date.now();
+    }
+
+    mutes[userID] =
     {
+      time: date,
+      date: Date.now(),
+      reason: reason,
+      avatar: avatar,
+      username: username,
+      tag: tag,
+      staff: {
+        id: staffID,
+        username: staffUsername,
+        avatar: staffAvatar,
+        tag: staffTag
+      }
+    };
+
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
+    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async warnUser(userID, warnID, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
+    var mod = this.ModModule;
+
+    if (!mod.warns) {
+      mod.warns = {};
+    }
+
+    let warns = mod.warns;
+
+    var date = Date.now() + 2592000000;
+
+    warns[warnID] =
+    {
+      user: userID,
+      time: date,
+      date: Date.now(),
+      reason: reason,
+      avatar: avatar,
+      username: username,
+      tag: tag,
+      staff: {
+        id: staffID,
+        username: staffUsername,
+        avatar: staffAvatar,
+        tag: staffTag
+      }
+    };
+
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
+    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async addHistory(userID, time, id, punishment, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
+    let mod = this.ModModule;
+
+    if (!mod.history) {
       mod.history = {};
     }
 
     let history = mod.history;
 
-    if(!history[userID])
-    {
+    if (!history[userID]) {
+      history[userID] = {};
+    }
+
+    let userHistory = history[userID];
+
+    userHistory['userInfo'] = {
+      userID: userID,
+      avatar: avatar,
+      username: username,
+      tag: tag,
+    }
+
+    userHistory[id] = {
+      id: id,
+      time: time,
+      date: Date.now(),
+      reason: reason,
+      punishment: punishment,
+      staff: {
+        id: staffID,
+        username: staffUsername,
+        avatar: staffAvatar,
+        tag: staffTag
+      }
+    };
+
+    var settings = cache.get(this.guildID);
+
+    settings.ModModule = mod;
+
+    cache.set(this.guildID, settings);
+
+    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+  }
+
+  async removeHistory(userID, id) {
+    let mod = this.ModModule;
+
+    if (!mod.history) {
+      mod.history = {};
+    }
+
+    let history = mod.history;
+
+    if (!history[userID]) {
       history[userID] = {};
     }
 
@@ -481,25 +487,22 @@ class Guild
     await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
-  async clearHistory(userID)
-  {
+  async clearHistory(userID) {
     let mod = this.ModModule;
 
-    if(!mod.history)
-    {
+    if (!mod.history) {
       mod.history = {};
     }
 
     let history = mod.history;
 
-    if(!history[userID])
-    {
+    if (!history[userID]) {
       history[userID] = {};
     }
 
-    let userHistory = history[userID];
+    delete history[userID];
 
-    userHistory ={}
+    mod.history = history;
 
     var settings = cache.get(this.guildID);
 
@@ -510,31 +513,27 @@ class Guild
     await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
-  getHistory(userID)
-  {
+  getHistory(userID) {
     let mod = this.ModModule;
 
     let history = mod.history;
-    
-    if(!history)
-    {
+
+    if (!history) {
       history = {};
     }
 
-    if(!history[userID])
-    {
+    if (!history[userID]) {
       return {};
     }
 
     return history[userID];
   }
 
-  async unbanUser(userID)
-  {
+  async unbanUser(userID) {
     let mod = this.ModModule;
 
     var bans = mod.bans;
-    
+
     delete bans[userID];
 
     var settings = cache.get(this.guildID);
@@ -546,12 +545,10 @@ class Guild
     setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
-  async unmuteUser(userID)
-  {
+  async unmuteUser(userID) {
     let mod = this.ModModule;
 
-    if(!mod.mutes)
-    {
+    if (!mod.mutes) {
       mod.mutes = {};
     }
 
@@ -568,12 +565,10 @@ class Guild
     await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
-  async unwarnUser(warnID)
-  {
+  async unwarnUser(warnID) {
     let mod = this.ModModule;
 
-    if(!mod.warns)
-    {
+    if (!mod.warns) {
       mod.warns = {};
     }
 
@@ -590,12 +585,10 @@ class Guild
     await setGuildInfo(this.guildID, "ModModule", stringify(mod));
   }
 
-  async getBans()
-  {
+  async getBans() {
     let mod = this.ModModule;
 
-    if(!mod.bans)
-    {
+    if (!mod.bans) {
       mod.bans = {};
     }
 
@@ -605,12 +598,10 @@ class Guild
   }
 
 
-  async getMutes()
-  {
+  async getMutes() {
     let mod = this.ModModule;
 
-    if(!mod.mutes)
-    {
+    if (!mod.mutes) {
       mod.mutes = {};
     }
 
@@ -619,12 +610,10 @@ class Guild
     return mutes;
   }
 
-  async getWarns()
-  {
+  async getWarns() {
     let mod = this.ModModule;
 
-    if(!mod.warns)
-    {
+    if (!mod.warns) {
       mod.warns = {};
     }
 

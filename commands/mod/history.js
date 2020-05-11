@@ -20,6 +20,13 @@ function capitalize(s) {
 	return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
+function memberFilterInexact(search) {
+	return mem => mem.user.username.toLowerCase().includes(search.toLowerCase()) ||
+		(mem.nickname && mem.nickname.toLowerCase().includes(search.toLowerCase())) ||
+        `${mem.user.username.toLowerCase()}#${mem.user.discriminator}`.includes(search.toLowerCase()) ||
+        search.includes(mem.user.id);
+}
+
 module.exports = class ClassName extends commando.Command {
     constructor(client) {
         super(client, {
@@ -35,9 +42,10 @@ module.exports = class ClassName extends commando.Command {
 
             args: [
                 {
-                    key: 'user',
+                    key: 'member',
                     prompt: 'Who would you like to warn?',
-                    type: 'member'
+                    type: 'string',
+                    default: ''
                 },
                 {
                     key: 'action',
@@ -55,12 +63,52 @@ module.exports = class ClassName extends commando.Command {
         })
     }
 
-    async run(msg, {user, action, id}) {
+    async run(msg, {member, action, id}) {
         var guild = new Guild(msg.guild.id);
 
         var mod = guild.ModModule;
 
         if(mod.enabled == false) return;
+
+        //Member Search & Errors
+
+        if(member === '')
+        {
+            var d = new Discord.MessageEmbed()
+            .setTitle('ERROR: \`No Member Provided\`')
+            .setDescription(`**Command Usage**\n-history {member}\n\n **Example**\n\`-history @username#0000\``)
+            msg.channel.send(d);
+            return
+        }
+
+        var members = msg.guild.members.cache;
+        
+        var result = members.filter(memberFilterInexact(member))
+
+        var user = result.first();
+
+        if(result.size > 1)
+        {
+            var str = '';
+
+            result.each(user => str += ` • <@!${user.id}>\n`)
+
+            var a = new Discord.MessageEmbed()
+            .setTitle('Uh Oh!')
+            .setDescription(`Multiple members found, please try again (and be more specific)!\n${str}`)
+            msg.channel.send(a);
+            return;
+        }
+        else if(!result.size)
+        {
+            var c = new Discord.MessageEmbed()
+            .setTitle(`ERROR: \`Invalid User '${member}'\``)
+            .setDescription(`**Command Usage**\n-history {member}\n\n **Example**\n\`-history @username#0000\``)
+            msg.channel.send(c);
+            return
+        }
+
+        //------------------------------------
 
         if(!user.bannable || user.roles.cache.first().position > msg.member.roles.cache.first().position)
         {
@@ -70,16 +118,14 @@ module.exports = class ClassName extends commando.Command {
 
         var history = guild.getHistory(user.id);
 
+        delete history['userInfo'];
+
         var str = '';
 
         for (const id in history) {
             var entry = history[id];
 
             var date = new Date(entry.date);
-
-            console.log(entry);
-
-            console.log(entry.time);
 
             if(entry.time == 'infinite')
             {
@@ -90,13 +136,28 @@ module.exports = class ClassName extends commando.Command {
                 var time = prettyMs(entry.time);
             }
 
-            str += 
-            `\n**${capitalize(entry.punishment)}** (ID: **${id}**)\n` +
-            ` • **Date:** ${date.toDateString()}\n` +
-            ` • **Duration:** ${time}\n` +
-            ` • **Issued By:** ${entry.staff.username}#${entry.staff.tag}\n` +
-            ` • **Reason:** ${entry.reason}\n`
+            if(entry.punishment === 'kick')
+            {
+                str += 
+                `\n**${capitalize(entry.punishment)}** (ID: **${id}**)\n` +
+                ` • **Date:** ${date.toDateString()}\n` +
+                ` • **Issued By:** ${entry.staff.username}#${entry.staff.tag}\n` +
+                ` • **Reason:** ${entry.reason}\n`
+            }
+            else
+            {
+                str += 
+                `\n**${capitalize(entry.punishment)}** (ID: **${id}**)\n` +
+                ` • **Date:** ${date.toDateString()}\n` +
+                ` • **Duration:** ${time}\n` +
+                ` • **Issued By:** ${entry.staff.username}#${entry.staff.tag}\n` +
+                ` • **Reason:** ${entry.reason}\n`
+            }
+        }
 
+        if(str === '')
+        {
+            str += `${user} is a model citizen! I couldn't find anything on them!`
         }
 
         if(action == 'clear')

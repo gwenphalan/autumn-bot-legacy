@@ -5,6 +5,16 @@ const prettyMs = require('pretty-ms');
 const { Guild } = require('../../guild.js');
 const Discord = require('discord.js');
 
+function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
 function memberFilterInexact(search) {
 	return mem => mem.user.username.toLowerCase().includes(search.toLowerCase()) ||
 		(mem.nickname && mem.nickname.toLowerCase().includes(search.toLowerCase())) ||
@@ -15,42 +25,39 @@ function memberFilterInexact(search) {
 module.exports = class ClassName extends commando.Command {
     constructor(client) {
         super(client, {
-            name: 'unmute',
+            name: 'kick',
             aliases: [],
             group: 'mod',
-            memberName: 'unmute',
-            description: 'Unmutes the targetted user.',
+            memberName: 'kick',
+            description: 'Kicks the targetted user',
             details: oneLine`
-            Unmutes the targetted user.
+            Kicks the targetted user
             `,
-            examples: ['-unmute @user#1234 He said sorry.'],
+            examples: ['-ban @user#1234 30m "Annoying"'],
 
             args: [
                 {
                     key: 'member',
-                    prompt: 'Who would you like to unmute?',
+                    prompt: 'Who would you like to kick?',
                     type: 'string',
                     default: ''
                 },
                 {
                     key: 'reason',
-                    prompt: 'Why are you unmuting them?',
+                    prompt: 'Why are you banning kick?',
                     type: 'string',
                     default: 'No Reason Given'
                 }
-            ]
+              ]
         })
     }
 
-    async run(msg, { member, reason }) {
-
+    async run(msg, {member, reason}) {
         var guild = new Guild(msg.guild.id);
 
         var mod = guild.ModModule;
 
-        var mutes = await guild.getMutes();
-
-        if (mod.enabled == false) return;
+        if(mod.enabled == false) return;
 
         if(!msg.member.roles.cache.has(mod.StaffRole))
         {
@@ -64,7 +71,7 @@ module.exports = class ClassName extends commando.Command {
         {
             var d = new Discord.MessageEmbed()
             .setTitle('ERROR: \`No Member Provided\`')
-            .setDescription(`**Command Usage**\n-mute {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
+            .setDescription(`**Command Usage**\n-kick {member} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
             msg.channel.send(d);
             return
         }
@@ -91,40 +98,50 @@ module.exports = class ClassName extends commando.Command {
         {
             var c = new Discord.MessageEmbed()
             .setTitle(`ERROR: \`Invalid User '${member}'\``)
-            .setDescription(`**Command Usage**\n-mute {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
+            .setDescription(`**Command Usage**\n-warn {member} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
             msg.channel.send(c);
             return
         }
 
-        //-----------------------
+        //------------------------------------
 
-        if(!mutes[user.id])
+        if(!user.bannable || user.roles.cache.first().position > msg.member.roles.cache.first().position)
         {
-            var g = new Discord.MessageEmbed()
-            .setTitle(`ERROR: \`User Not Muted\``)
-            .setDescription(`${user} is note muted!\n\n**Command Usage**\n-mute {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
-            msg.channel.send(g);
-            return
+            msg.channel.send(`You cannot warn this user!`);
+            return;
         }
 
-        var mutedRole = mod.MutedRole;
+        var id;
+
+        var idIsUnique = false;
+
+        var history = guild.getHistory(user.id);
+
+        while(!idIsUnique)
+        {
+            id = makeid(5);
+            if(!history[id]) idIsUnique = true;
+        }
 
         var response = new Discord.MessageEmbed()
         .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
-        .setTitle(`${user.user.tag} has been unmuted!`)
-        .setDescription(`**Reason:** ${reason}`)
+        .setTitle(`${user.user.tag} has been kicked!`)
+        .setDescription(`**Reason:** ${reason}\n`)
         .setThumbnail(user.user.displayAvatarURL({
-            format: 'png',
-            dynamic: true,
-            size: 512
-        }))
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }))
         .setColor(`#db583e`)
-        .setFooter(`Unmuted By ${msg.author.username}`, msg.author.displayAvatarURL({
-            format: 'png',
-            dynamic: true,
-            size: 512
-        }))
+        .setFooter(`Kicked By ${msg.author.username} | ID: ${id}`, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }))
         .setTimestamp()
+
+        
+        msg.channel.send(response);
 
         if(mod.ModLogEnabled)
         {
@@ -132,10 +149,11 @@ module.exports = class ClassName extends commando.Command {
 
             var log = new Discord.MessageEmbed()
             .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
-            .setTitle(`User Unmuted`)
+            .setTitle(`User Kicked`)
             .setDescription(
+                ` • **ID:** ${id}\n` +
                 ` • **User:** ${user}\n` +
-                ` • **Unmuted By:** ${msg.author}\n` +
+                ` • **Kicked By:** ${msg.author}\n` +
                 ` • **Reason:** ${reason}\n`
             )
             .setColor(`#db583e`)
@@ -144,9 +162,16 @@ module.exports = class ClassName extends commando.Command {
             modlog.send(log);
         }
 
-        msg.channel.send(response)
+        user.kick(reason);
 
-        user.roles.remove(mutedRole);
-        guild.unmuteUser(user.id);
+        guild.addHistory(user.id, 'infinite', id, "kick", reason, user.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 512
+            }), msg.author.discriminator);
     }
 }

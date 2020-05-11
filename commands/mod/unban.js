@@ -64,8 +64,6 @@ module.exports = class ClassName extends commando.Command {
         
         var bans = await msg.guild.fetchBans();
         var members = msg.guild.members.cache
-        
-        console.log(bans)
     
 
         //Member Search & Errors
@@ -79,10 +77,8 @@ module.exports = class ClassName extends commando.Command {
             return
         }
         var result = bans.filter(banFilterInexact(member));
-        console.log(result);
 
         var result1 = members.filter(memberFilterInexact(member));
-        console.log(result1);
 
         if (result.size > 1 || 
             result1.size > 1 || 
@@ -123,9 +119,43 @@ module.exports = class ClassName extends commando.Command {
 
         var guildBans = await msg.guild.fetchBans();
 
-        console.log(guildBans);
 
-        msg.channel.send(`Unbanned \`${userID}\` for reason: \`${reason}\``)
+        var response = new Discord.MessageEmbed()
+        .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+        .setTitle(`${user.tag} has been unbanned!`)
+        .setDescription(`**Reason:** ${reason}`)
+        .setThumbnail(user.displayAvatarURL({
+            format: 'png',
+            dynamic: true,
+            size: 512
+        }))
+        .setColor(`#db583e`)
+        .setFooter(`Unbanned By ${msg.author.username}`, msg.author.displayAvatarURL({
+            format: 'png',
+            dynamic: true,
+            size: 512
+        }))
+        .setTimestamp()
+
+        if(mod.ModLogEnabled)
+        {
+            var modlog = msg.guild.channels.cache.get(mod.ModLog);
+
+            var log = new Discord.MessageEmbed()
+            .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+            .setTitle(`User Unbanned`)
+            .setDescription(
+                ` • **User:** ${user}\n` +
+                ` • **Unbanned By:** ${msg.author}\n` +
+                ` • **Reason:** ${reason}\n`
+            )
+            .setColor(`#db583e`)
+            .setTimestamp()
+
+            modlog.send(log);
+        }
+
+        msg.channel.send(response)
 
         msg.guild.members.unban(userID);
         guild.unbanUser(userID);

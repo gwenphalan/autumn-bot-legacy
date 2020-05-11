@@ -17,13 +17,6 @@ const client = new commando.Client({
 
 const dbl = new DBL(settings.dbl_api_token, client);
 
-if (settings.beta) {
-  var token = settings.beta_token;
-}
-else {
-  var token = settings.bot_token;
-}
-
 client.on("ready", () => {
   console.log("Loading...");
   let interval = setInterval(() => {
@@ -92,22 +85,15 @@ client.registry
   .registerTypesIn(path.join(__dirname, 'types'))
   .registerCommandsIn(path.join(__dirname, 'commands'));
 
-if (settings.beta) {
-  var database = settings.db_beta_database;
-}
-else {
-  var database = settings.db_database;
-}
-
 MySQL.createConnection({
   host: settings.db_host,
   user: settings.db_user,
   password: settings.db_password,
-  database: database,
+  database: settings.db_database,
   charset: 'utf8mb4'
 }).then((db) => {
   client.setProvider(new MySQLProvider(db));
-  client.login(token);
+  client.login(settings.bot_token);
 });
 
 exports.client = client;

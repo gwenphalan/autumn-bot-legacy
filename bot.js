@@ -6,6 +6,7 @@ const { Guild, router } = require(__dirname + '/guild.js');
 const bodyParser = require('body-parser');
 const verification = require(__dirname + "/modules/verification.js");
 const express = require('express');
+const axios = require('axios');
 const app = express();
 const port = process.env['PORT'] || 3001;
 
@@ -37,6 +38,15 @@ client.on("guildCreate", async function (guild) {
   con.query(sql, function (err, result) {
     if (err) throw err;
     console.log("1 record inserted");
+  }).then(() => {
+    axios
+        .post(`http://localhost:3000/guild`)
+        .then(res => {
+            console.log("RES: " + res.data)
+        })
+        .catch(error => {
+            console.error(error)
+        })
   });
 
   let welcome = new Discord.MessageEmbed()
@@ -62,6 +72,14 @@ client.on("guildCreate", async function (guild) {
 client.on("guildDelete", async function (guild) {
   var sql = `DELETE FROM guildsettings WHERE Guild = '${guild.id}'`;
   con.query(sql, function (err, result) {
+    axios
+        .post(`http://localhost:3000/api/guild/update`)
+        .then(res => {
+            console.log("RES: " + res.data)
+        })
+        .catch(error => {
+            console.error(error)
+        })
     if (err) throw err;
     console.log("Number of records deleted: " + result.affectedRows);
   });

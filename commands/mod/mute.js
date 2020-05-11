@@ -2,7 +2,7 @@ const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
 const timestring = require('timestring');
 const prettyMs = require('pretty-ms');
-const { Guild } = require('../../guild.js');
+const Guild = require('../../guild/guild');
 const Discord = require('discord.js');
 
 function makeid(length) {
@@ -16,9 +16,9 @@ function makeid(length) {
 }
 
 function memberFilterInexact(search) {
-	return mem => mem.user.username.toLowerCase().includes(search) ||
-		(mem.nickname && mem.nickname.toLowerCase().includes(search)) ||
-        `${mem.user.username.toLowerCase()}#${mem.user.discriminator}`.includes(search) ||
+	return mem => mem.user.username.toLowerCase().includes(search.toLowerCase()) ||
+		(mem.nickname && mem.nickname.toLowerCase().includes(search.toLowerCase())) ||
+        `${mem.user.username.toLowerCase()}#${mem.user.discriminator}`.includes(search.toLowerCase()) ||
         search.includes(mem.user.id);
 }
 
@@ -62,9 +62,20 @@ module.exports = class ClassName extends commando.Command {
 
         var guild = new Guild(msg.guild.id);
 
-        var mod = await guild.ModModule;
+        var mod = guild.ModModule.settings;
 
         var time = muteTime;
+        //------------------------------------
+        
+        try {
+            timestring(time);
+          }
+          catch(err) {
+            if(err)
+            {
+                time = 'infinite'
+            }
+          }
 
         if (mod.enabled == false) return;
 
@@ -74,32 +85,14 @@ module.exports = class ClassName extends commando.Command {
             return;
         }
 
+        //Member Search & Errors
+
         if(member === '')
         {
             var d = new Discord.MessageEmbed()
             .setTitle('ERROR: \`No Member Provided\`')
             .setDescription(`**Command Usage**\n-mute {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
             msg.channel.send(d);
-            return
-        }
-
-        var validTime = true;
-
-        try {
-            timestring(time);
-        }
-        catch (err) {
-            if (err && muteTime != 'infinite') {
-                validTime = false;
-            }
-        }
-
-        if(!validTime)
-        {
-            var b = new Discord.MessageEmbed()
-            .setTitle(`ERROR: \`Invalid Time String '${muteTime}'\``)
-            .setDescription(`**Command Usage**\n-mute {member} {duration \`optional\`} {reason \`optional\`}\n\n **Example**\n\`-mute @Username#0000 10m Spam\``)
-            msg.channel.send(b);
             return
         }
 
@@ -129,7 +122,8 @@ module.exports = class ClassName extends commando.Command {
             msg.channel.send(c);
             return
         }
-        
+
+        //-----------------------
 
         if(!user.bannable || user.roles.cache.first().position > msg.member.roles.cache.first().position)
         {
@@ -139,37 +133,11 @@ module.exports = class ClassName extends commando.Command {
 
         var mutedRole = mod.MutedRole;
 
-        if (!mutedRole || !msg.guild.roles.cache.get(mutedRole)) {
-            msg.guild.roles.create({
-                data: {
-                    name: 'Muted',
-                    color: '#4a4a4a',
-                },
-                reason: 'Required to mute users.',
-            })
-                .then(async function (role) {
-                    console.log(role.id);
-
-                    msg.guild.channels.cache.each(channel => {
-                        channel.overwritePermissions([
-                            {
-                                id: role.id,
-                                deny: ['SEND_MESSAGES'],
-                            },
-                        ], 'Required to mute users.');
-                    });
-                    mod.MutedRole = role.id;
-
-                    guild.updateModule("ModModule", mod);
-                })
-                .catch(console.error);
-        }
-
         var id;
 
         var idIsUnique = false;
 
-        var history = guild.getHistory(user.id);
+        var history = guild.ModModule.getHistory(user.id);
 
         while(!idIsUnique)
         {
@@ -209,8 +177,28 @@ module.exports = class ClassName extends commando.Command {
             }))
             .setTimestamp()
 
+            if(mod.ModLogEnabled)
+            {
+                var modlog = msg.guild.channels.cache.get(mod.ModLog);
+    
+                var log = new Discord.MessageEmbed()
+                .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+                .setTitle(`User Muted`)
+                .setDescription(
+                    ` • **ID:** ${id}\n` +
+                    ` • **User:** ${user}\n` +
+                    ` • **Muted By:** ${msg.author}\n` +
+                    ` • **Duration:** Permanent\n` +
+                    ` • **Reason:** ${str}\n`
+                )
+                .setColor(`#db583e`)
+                .setTimestamp()
+    
+                modlog.send(log);
+            }
+
             msg.channel.send(response);
-            guild.muteUser(user.id, "infinite", str, user.user.displayAvatarURL({
+            guild.ModModule.muteUser(user.id, "infinite", str, user.user.displayAvatarURL({
                 format: 'png',
                 dynamic: true,
                 size: 512
@@ -220,7 +208,7 @@ module.exports = class ClassName extends commando.Command {
                 size: 512
             }), msg.author.discriminator);
 
-            guild.addHistory(user.id, "infinite", id, "mute", reason, user.user.displayAvatarURL({
+            guild.ModModule.addHistory(user.id, "infinite", id, "mute", str, user.user.displayAvatarURL({
                 format: 'png',
                 dynamic: true,
                 size: 512
@@ -249,12 +237,32 @@ module.exports = class ClassName extends commando.Command {
             }))
             .setTimestamp()
 
+            if(mod.ModLogEnabled)
+            {
+                var modlog = msg.guild.channels.cache.get(mod.ModLog);
+    
+                var log = new Discord.MessageEmbed()
+                .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
+                .setTitle(`User Muted`)
+                .setDescription(
+                    ` • **ID:** ${id}\n` +
+                    ` • **User:** ${user}\n` +
+                    ` • **Muted By:** ${msg.author}\n` +
+                    ` • **Duration:** ${prettyMs(timestring(time) * 1000)}\n` +
+                    ` • **Reason:** ${reason}\n`
+                )
+                .setColor(`#db583e`)
+                .setTimestamp()
+    
+                modlog.send(log);
+            }
+
             if (timestring(time) < 30) {
                 msg.channel.send("You must mute the user for at least **30 seconds**.");
                 return;
             };
             msg.channel.send(response);
-            guild.muteUser(user.id, timestring(time) * 1000, reason, user.user.displayAvatarURL({
+            guild.ModModule.muteUser(user.id, timestring(time) * 1000, reason, user.user.displayAvatarURL({
                 format: 'png',
                 dynamic: true,
                 size: 512
@@ -264,7 +272,7 @@ module.exports = class ClassName extends commando.Command {
                 size: 512
             }), msg.author.discriminator);
 
-            guild.addHistory(user.id, timestring(time) * 1000, id, "mute", reason, user.user.displayAvatarURL({
+            guild.ModModule.addHistory(user.id, timestring(time) * 1000, id, "mute", reason, user.user.displayAvatarURL({
                 format: 'png',
                 dynamic: true,
                 size: 512
