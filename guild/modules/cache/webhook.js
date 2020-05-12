@@ -2,9 +2,9 @@ const axios = require('axios');
 
 class Webhook
 {
-  static update(action, guildID, obj)
+  static send(action, guildID, obj)
   {
-    const validActions = ["updateVerify", "updateMod", "updateApps"];
+    const validActions = ["updateVerify", "updateMod", "updateApps", "addGuild", "deleteGuild"];
 
     if(!validActions.includes(action))
     {
@@ -21,3 +21,5 @@ class Webhook
         })
   }
 }
+
+module.exports = Webhook;

@@ -24,6 +24,14 @@ router.post('/:guildID/:action', catchAsync(async function (req, res) {
     {
       Cache.updateApps(params.guildID, body)
     }
+    else if(action === "addGuild")
+    {
+      Cache.addGuild(params.guildID)
+    }
+    else if(action === "deleteGuild")
+    {
+      Cache.deleteGuild(params.guildID)
+    }
 
     res.send("Webhook Recieved");
 }))

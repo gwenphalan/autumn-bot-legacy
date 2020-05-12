@@ -1,5 +1,6 @@
 const Database = require('./database');
 const jsonConvert = require('./jsonConvert');
+const Webhook = require('./webhook');
 
 var _cache;
 
@@ -106,16 +107,19 @@ class Cache{
     static updateVerify(guildID, verify)
     {
       _cache.VerifyModule.set(guildID, verify);
+      Webhook.send("updateVerify", guildID, verify);
     }
 
     static updateMod(guildID, mod)
     {
       _cache.ModModule.set(guildID, mod);
+      Webhook.send("updateMod", guildID, mod);
     }
 
     static updateApps(guildID, apps)
     {
       _cache.VerifyApps.set(guildID, apps);
+      Webhook.send("updateApps", guildID, apps);
     }
 
     static getVerify(guildID)
@@ -142,6 +146,8 @@ class Cache{
       _cache.ModModule.set(guildID, {
         enabled: false
       })
+
+      Webhook.send("addGuild", guildID, {});
     }
 
     static deleteGuild(guildID)
@@ -149,6 +155,8 @@ class Cache{
       _cache.VerifyApps.delete(guildID)
       _cache.VerifyModule.delete(guildID)
       _cache.ModModule.delete(guildID)
+
+      Webhook.send("deleteGuild", guildID, {});
     }
 }
 

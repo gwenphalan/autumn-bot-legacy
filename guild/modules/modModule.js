@@ -53,7 +53,7 @@ class ModModule {
         Database.updateGuild(this.id, "ModModule", mod);
     }
 
-    async banUser(userID, time, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
+    banUser(userID, time, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
         let mod = this.settings;
 
         if (!mod.bans) {
@@ -89,7 +89,7 @@ class ModModule {
         Database.updateGuild(this.id, "ModModule", mod);
     }
 
-    async muteUser(userID, time, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
+    muteUser(userID, time, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
         let mod = this.settings;
 
         if (!mod.mutes) {
@@ -125,7 +125,7 @@ class ModModule {
         Database.updateGuild(this.id, "ModModule", mod);
     }
 
-    async addHistory(userID, time, id, punishment, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
+    addHistory(userID, time, id, punishment, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
         let mod = this.settings;
 
         if (!mod.history) {
@@ -161,7 +161,7 @@ class ModModule {
         Database.updateGuild(this.id, "ModModule", mod);
     }
 
-    async removeHistory(userID, id) {
+    removeHistory(userID, id) {
         let mod = this.settings;
 
         if (!mod.history) {
@@ -178,7 +178,7 @@ class ModModule {
         Database.updateGuild(this.id, "ModModule", mod);
     }
 
-    async clearHistory(userID) {
+    clearHistory(userID) {
         let mod = this.settings;
 
         if (!mod.history) {
@@ -195,7 +195,7 @@ class ModModule {
         Database.updateGuild(this.id, "ModModule", mod);
     }
 
-    async unbanUser(userID) {
+    unbanUser(userID) {
         let mod = this.settings;
 
         delete mod.bans[userID];
@@ -204,7 +204,7 @@ class ModModule {
         Database.updateGuild(this.id, "ModModule", mod);
     }
 
-    async unmuteUser(userID) {
+    unmuteUser(userID) {
         let mod = this.settings;
 
         if (!mod.mutes) {
@@ -217,7 +217,7 @@ class ModModule {
         Database.updateGuild(this.id, "ModModule", mod);
     }
 
-    async unwarnUser(warnID) {
+    unwarnUser(warnID) {
         let mod = this.settings;
 
         if (!mod.warns) {

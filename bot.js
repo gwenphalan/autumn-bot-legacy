@@ -1,17 +1,20 @@
 /* eslint-disable no-console */
 require('dotenv').config({path: __dirname + '/.env'})
+
 const { client } = require(__dirname + "/client.js");
 const Discord = require('discord.js');
 const con = require(__dirname + '/db.js');
-const { Guild } = require(__dirname + '/guild.js');
+const Guild = require(__dirname + '/guild/guild')
 const router = require(___dirname + '/guild/router/router')
 const bodyParser = require('body-parser');
-const verification = require(__dirname + "/modules/verification.js");
 const express = require('express');
 const axios = require('axios');
 const app = express();
 const port = process.env['PORT'] || 3001;
 process.on('unhandledRejection', console.log);
+
+require(__dirname + "/modules/verification.js");
+require(__dirname + "/modules/moderation.js");
 
 app.use(bodyParser.urlencoded({
   extended: false
