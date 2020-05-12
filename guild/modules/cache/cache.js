@@ -4,160 +4,225 @@ const Webhook = require('./webhook');
 
 var _cache;
 
-async function fetch()
-{
-  var fetch = await Database.fetch()
+async function fetch() {
+  const fetch = await Database.fetch()
+  const profileFetch = await Database.fetchProfiles();
 
-  var VerifyModule = new Map();
-  var ModModule = new Map();
-  var VerifyApps = new Map();
+  let VerifyModule = new Map();
+  let ModModule = new Map();
+  let VerifyApps = new Map();
+  let Profiles = new Map();
+
+  profileFetch.forEach((user) => {
+    Profiles.set(user.userID, jsonConvert.toOBJ(user.profile))
+  })
 
   fetch.forEach((guild) => {
-      let verifyModuleJSON = guild.VerifyModule;
-      let modModuleJSON = guild.ModModule;
-      let verifyAppsJSON = guild.VerifyApps;
+    const verifyModule = jsonConvert.toOBJ(guild.VerifyModule);
+    const modModule = jsonConvert.toOBJ(guild.ModModule);
+    const verifyApps = jsonConvert.toOBJ(guild.VerifyApps);
 
-      let verifyModule = jsonConvert.toOBJ(verifyModuleJSON);
-      let modModule = jsonConvert.toOBJ(modModuleJSON);
-      let verifyApps = jsonConvert.toOBJ(verifyAppsJSON);
+    var apps = new Map();
 
-      var apps = new Map();
-
-      for (const app in verifyApps) {
-          var application =
-          {
-              userID: verifyApps[app].userID,
-              userApp: verifyApps[app].userApp
-          }
-
-          apps.set(app, application);
+    for (const app in verifyApps) {
+      var application =
+      {
+        userID: verifyApps[app].userID,
+        userApp: verifyApps[app].userApp
       }
 
-      VerifyModule.set(guild.Guild, verifyModule);
+      apps.set(app, application);
+    }
 
-      ModModule.set(guild.Guild, modModule);
+    VerifyModule.set(guild.Guild, verifyModule);
 
-      VerifyApps.set(guild.Guild, apps);
+    ModModule.set(guild.Guild, modModule);
+
+    VerifyApps.set(guild.Guild, apps);
   })
 
   _cache = {
     VerifyModule: VerifyModule,
     ModModule: ModModule,
-    VerifyApps: VerifyApps
+    VerifyApps: VerifyApps,
+    Profiles: Profiles
   }
-
-  console.log(_cache)
 }
 
 fetch().then(console.log('DATABASE CACHED'))
 
-class Cache{
-    static async fetch() {
-      var fetch = await Database.fetch()
+class Cache {
+  static async fetch() {
+    const fetch = await Database.fetch()
+    const profileFetch = await Database.fetchProfiles();
+  
+    let VerifyModule = new Map();
+    let ModModule = new Map();
+    let VerifyApps = new Map();
+    let Profiles = new Map();
+  
+    profileFetch.forEach((user) => {
+      ProfileMap.set(user.userID, jsonConvert.toOBJ(user.profile))
+    })
 
-      var VerifyModule = new Map();
-      var ModModule = new Map();
-      var VerifyApps = new Map();
-
-      fetch.forEach((guild) => {
-          let verifyModuleJSON = guild.VerifyModule;
-          let modModuleJSON = guild.ModModule;
-          let verifyAppsJSON = guild.VerifyApps;
-
-          let verifyModule = jsonConvert.toOBJ(verifyModuleJSON);
-          let modModule = jsonConvert.toOBJ(modModuleJSON);
-          let verifyApps = jsonConvert.toOBJ(verifyAppsJSON);
-
-          var apps = new Map();
-
-          for (const app in verifyApps) {
-              var application =
-              {
-                  userID: verifyApps[app].userID,
-                  userApp: verifyApps[app].userApp
-              }
-
-              apps.set(app, application);
-          }
-
-          VerifyModule.set(guild.Guild, verifyModule);
-
-          ModModule.set(guild.Guild, modModule);
-
-          VerifyApps.set(guild.Guild, apps);
-      })
-
-      return {
-        VerifyModule: VerifyModule,
-        ModModule: ModModule,
-        VerifyApps: VerifyApps
+    console.log(Profiles);
+  
+    fetch.forEach((guild) => {
+      const verifyModule = jsonConvert.toOBJ(guild.VerifyModule);
+      const modModule = jsonConvert.toOBJ(guild.ModModule);
+      const verifyApps = jsonConvert.toOBJ(guild.VerifyApps);
+  
+      for (const app in verifyApps) {
+        var application =
+        {
+          userID: verifyApps[app].userID,
+          userApp: verifyApps[app].userApp
+        }
+  
+        apps.set(app, application);
       }
+  
+      VerifyModule.set(guild.Guild, verifyModule);
+  
+      ModModule.set(guild.Guild, modModule);
+  
+      VerifyApps.set(guild.Guild, apps);
+    })
+  
+    return {
+      VerifyModule: VerifyModule,
+      ModModule: ModModule,
+      VerifyApps: VerifyApps,
+      Profiles: Profiles
     }
-    
-    static async cache()
-    {
-      if(!_cache)
-      {
-        _cache = this.fetch();
-      }
+  }
 
-      return _cache;
-    }
-
-    static updateVerify(guildID, verify)
-    {
-      _cache.VerifyModule.set(guildID, verify);
-      Webhook.send("updateVerify", guildID, verify);
-    }
-
-    static updateMod(guildID, mod)
-    {
-      _cache.ModModule.set(guildID, mod);
-      Webhook.send("updateMod", guildID, mod);
+  static async cache() {
+    if (!_cache) {
+      _cache = this.fetch();
     }
 
-    static updateApps(guildID, apps)
-    {
-      _cache.VerifyApps.set(guildID, apps);
-      Webhook.send("updateApps", guildID, apps);
-    }
+    return _cache;
+  }
 
-    static getVerify(guildID)
-    {
-      return _cache.VerifyModule.get(guildID);
-    }
+  static updateVerify(guildID, verify) {
+    _cache.VerifyModule.set(guildID, verify);
+    Webhook.send("updateVerify", guildID, verify);
+  }
 
-    static getMod(guildID)
-    {
-      return _cache.ModModule.get(guildID);
-    }
+  static updateMod(guildID, mod) {
+    _cache.ModModule.set(guildID, mod);
+    Webhook.send("updateMod", guildID, mod);
+  }
 
-    static getApps(guildID)
-    {
-      return _cache.VerifyApps.get(guildID);
-    }
+  static updateApps(guildID, apps) {
+    _cache.VerifyApps.set(guildID, apps);
+    Webhook.send("updateApps", guildID, apps);
+  }
 
-    static addGuild(guildID)
-    {
-      _cache.VerifyApps.set(guildID, {})
-      _cache.VerifyModule.set(guildID, {
-        enabled: false
-      })
-      _cache.ModModule.set(guildID, {
-        enabled: false
-      })
+  static updateProfile(userID, profile) {
+    _cache.Profiles.set(userID, profile);
+    Webhook.send("updateProfile", guildID, apps);
+  }
 
-      Webhook.send("addGuild", guildID, {});
-    }
+  static webhookVerify(guildID, verify) {
+    _cache.VerifyModule.set(guildID, verify);
+  }
 
-    static deleteGuild(guildID)
-    {
-      _cache.VerifyApps.delete(guildID)
-      _cache.VerifyModule.delete(guildID)
-      _cache.ModModule.delete(guildID)
+  static webhookMod(guildID, mod) {
+    _cache.ModModule.set(guildID, mod);
+  }
 
-      Webhook.send("deleteGuild", guildID, {});
-    }
+  static webhookApps(guildID, apps) {
+    _cache.VerifyApps.set(guildID, apps);
+  }
+
+  static webhookProfile(userID, profile) {
+    _cache.Profiles.set(userID, profile);
+  }
+
+  static getVerify(guildID) {
+    return _cache.VerifyModule.get(guildID);
+  }
+
+  static getMod(guildID) {
+    return _cache.ModModule.get(guildID);
+  }
+
+  static getApps(guildID) {
+    return _cache.VerifyApps.get(guildID);
+  }
+
+  static getProfile(userID) {
+    return _cache.Profiles.get(userID);
+  }
+
+  static addGuild(guildID) {
+    _cache.VerifyApps.set(guildID, {})
+    _cache.VerifyModule.set(guildID, {
+      enabled: false
+    })
+    _cache.ModModule.set(guildID, {
+      enabled: false
+    })
+
+    Webhook.send("addGuild", guildID, {});
+  }
+
+  static deleteGuild(guildID) {
+    _cache.VerifyApps.delete(guildID)
+    _cache.VerifyModule.delete(guildID)
+    _cache.ModModule.delete(guildID)
+
+    Webhook.send("addGuild", guildID, {});
+  }
+
+  static addProfile(user) {
+    var profile = {
+      userID: user.id,
+      username: user.username,
+      tag: user.discriminator,
+      avatar: user.avatar,
+      color: "f13128",
+      pronouns: "n/a",
+      gender: "",
+      age: "",
+      biography: ""
+  };
+
+    _cache.Profile.set(user.id, profile)
+
+    Webhook.send("deleteProfile", user.id, profile);
+  }
+
+  static deleteProfile(userID) {
+    _cache.Profile.delete(userID);
+    Webhook.send("deleteProfile", userID, {});
+  }
+
+  static webhookAddGuild(guildID) {
+    _cache.VerifyApps.set(guildID, {})
+    _cache.VerifyModule.set(guildID, {
+      enabled: false
+    })
+    _cache.ModModule.set(guildID, {
+      enabled: false
+    })
+  }
+
+  static webhookDeleteGuild(guildID) {
+    _cache.VerifyApps.delete(guildID)
+    _cache.VerifyModule.delete(guildID)
+    _cache.ModModule.delete(guildID)
+  }
+
+  static webhookAddProfile(userID, profile) {
+    _cache.Profile.set(userID, profile)
+  }
+
+  static webhookDeleteProfile(userID) {
+    _cache.Profile.delete(userID)
+  }
 }
 
 module.exports = Cache;

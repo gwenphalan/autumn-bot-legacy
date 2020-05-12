@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const Cache = require('../modules/cache/cache')
+const { catchAsync } = require('../../utils.js')
 
 var router = express.Router();
 router.use(bodyParser.urlencoded({
@@ -10,27 +11,34 @@ router.use(bodyParser.json());
 
 router.post('/:guildID/:action', catchAsync(async function (req, res) {
     const body = req.body;
-    const params = req.params;
 
-    if(action === "updateVerify")
+    if(req.params.action === "updateVerify")
     {
-      Cache.updateVerify(params.guildID, body);
+      Cache.webhookVerify(req.params.guildID, body);
     }
-    else if(action === "updateMod")
+    else if(req.params.action === "updateMod")
     {
-      Cache.updateMod(params.guildID, body);
+      Cache.webhookMod(req.params.guildID, body);
     }
-    else if(action === "updateApps")
+    else if(req.params.action === "updateApps")
     {
-      Cache.updateApps(params.guildID, body)
+      Cache.webhookApps(req.params.guildID, body)
     }
-    else if(action === "addGuild")
+    else if(req.params.action === "addGuild")
     {
-      Cache.addGuild(params.guildID)
+      Cache.webhookAddGuild(req.params.guildID)
     }
-    else if(action === "deleteGuild")
+    else if(req.params.action === "deleteGuild")
     {
-      Cache.deleteGuild(params.guildID)
+      Cache.webhookDeleteGuild(req.params.guildID)
+    }
+    else if(req.params.action === "addProfile")
+    {
+      Cache.webhookAddProfile(req.params.guildID, body)
+    }
+    else if(req.params.action === "deleteProfile")
+    {
+      Cache.webhookDeleteProfile(req.params.guildID)
     }
 
     res.send("Webhook Recieved");

@@ -1,7 +1,6 @@
 const { client } = require("../client.js");
 const Discord = require('discord.js');
-const con = require('../db.js');
-const { Guild } = require('../guild.js');
+const Guild = require('../guild/guild.js');
 const cron = require('node-cron');
 
 console.log('MOD MODULE ON')
@@ -12,7 +11,7 @@ cron.schedule('*/30 * * * * *', async () => {
     guilds.each(async(guild) => {
         var guildOBJ = new Guild(guild.id)
 
-        var mod = guildOBJ.ModModule;
+        var mod = guildOBJ.ModModule.settings;
         
         if(mod.enabled)
         {
@@ -25,7 +24,7 @@ cron.schedule('*/30 * * * * *', async () => {
                 if(time <= Date.now())
                 {
                     guild.members.unban(userID);
-                    guildOBJ.unbanUser(userID);
+                    guildOBJ.ModModule.unbanUser(userID);
                 }
             }
 
@@ -38,7 +37,7 @@ cron.schedule('*/30 * * * * *', async () => {
                 if(mute.time <= Date.now())
                 {
                     guild.members.cache.get(userID).roles.remove(mod.MutedRole);
-                    guildOBJ.unmuteUser(userID);
+                    guildOBJ.ModModule.unmuteUser(userID);
                 }
             }
         }

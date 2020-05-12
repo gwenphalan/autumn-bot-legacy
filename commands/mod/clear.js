@@ -1,23 +1,7 @@
 const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
-const timestring = require('timestring');
-const prettyMs = require('pretty-ms');
-const { Guild } = require('../../guild.js');
+const Guild = require('../../guild/guild.js');
 const Discord = require('discord.js');
-
-function banFilterInexact(search) {
-	return ban => ban.user.username.toLowerCase().includes(search) ||
-        `${ban.user.username.toLowerCase()}#${ban.user.discriminator}`.includes(search.toLowerCase()) ||
-        `@${ban.user.username.toLowerCase()}#${ban.user.discriminator}`.includes(search.toLowerCase()) ||
-        search.includes(ban.user.id);
-}
-
-function memberFilterInexact(search) {
-	return mem => mem.user.username.toLowerCase().includes(search.toLowerCase()) ||
-		(mem.nickname && mem.nickname.toLowerCase().includes(search.toLowerCase())) ||
-        `${mem.user.username.toLowerCase()}#${mem.user.discriminator}`.includes(search.toLowerCase()) ||
-        search.includes(mem.user.id);
-}
 
 module.exports = class ClassName extends commando.Command {
     constructor(client) {
@@ -46,7 +30,7 @@ module.exports = class ClassName extends commando.Command {
     async run(msg, { int }) {
         var guild = new Guild(msg.guild.id);
 
-        var mod = await guild.ModModule;
+        var mod = await guild.ModModule.settings;
 
         if (mod.enabled == false) return;
         

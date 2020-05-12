@@ -2,7 +2,7 @@ const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
 const timestring = require('timestring');
 const prettyMs = require('pretty-ms');
-const { Guild } = require('../../guild.js');
+const Guild = require('../../guild/guild');
 const Discord = require('discord.js');
 
 function makeid(length) {
@@ -61,7 +61,7 @@ module.exports = class ClassName extends commando.Command {
     async run(msg, {member, banTime, reason}) {
         var guild = new Guild(msg.guild.id);
 
-        var mod = await guild.ModModule;
+        var mod = guild.ModModule.settings;
 
         var time = banTime;
 
@@ -133,7 +133,7 @@ module.exports = class ClassName extends commando.Command {
 
         var idIsUnique = false;
 
-        var history = guild.getHistory(user.id);
+        var history = guild.ModModule.getHistory(user.id);
 
         while(!idIsUnique)
         {
@@ -198,17 +198,7 @@ module.exports = class ClassName extends commando.Command {
 
 
             msg.channel.send(response);
-            guild.banUser(user.id, "infinite", str, user.user.displayAvatarURL({
-                format: 'png',
-                dynamic: true,
-                size: 512
-            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
-                format: 'png',
-                dynamic: true,
-                size: 512
-            }), msg.author.discriminator);
-
-            guild.addHistory(user.id, "infinite", id, "mute", str, user.user.displayAvatarURL({
+            guild.ModModule.banUser(user.id, "infinite", id, str, user.user.displayAvatarURL({
                 format: 'png',
                 dynamic: true,
                 size: 512
@@ -263,17 +253,7 @@ module.exports = class ClassName extends commando.Command {
             }
 
             msg.channel.send(response);
-            guild.banUser(user.id, timestring(time) * 1000, user.user.displayAvatarURL({
-                format: 'png',
-                dynamic: true,
-                size: 512
-            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
-                format: 'png',
-                dynamic: true,
-                size: 512
-            }), msg.author.discriminator);
-
-            guild.addHistory(user.id, timestring(time) * 1000, id, "ban", reason, user.user.displayAvatarURL({
+            guild.ModModule.banUser(user.id, timestring(time) * 1000, id, user.user.displayAvatarURL({
                 format: 'png',
                 dynamic: true,
                 size: 512

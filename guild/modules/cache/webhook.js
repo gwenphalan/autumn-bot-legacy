@@ -4,7 +4,7 @@ class Webhook
 {
   static send(action, guildID, obj)
   {
-    const validActions = ["updateVerify", "updateMod", "updateApps", "addGuild", "deleteGuild"];
+    const validActions = ["updateVerify", "updateMod", "updateApps", "addGuild", "deleteGuild", "addProfile", "deleteProfile"];
 
     if(!validActions.includes(action))
     {

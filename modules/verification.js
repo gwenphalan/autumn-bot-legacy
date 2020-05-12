@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 const { client } = require("../client.js");
 const Discord = require('discord.js');
-const con = require('../db.js');
 const Guild = require('../guild/guild.js');
 
 console.log("VERIFICAITON MODULE ON")
@@ -30,9 +29,7 @@ client.on("message", async (message) => {
             let GuildOBJ = new Guild(message.guild.id)
 
         let verifyModule = GuildOBJ.VerifyModule.settings;
-
-        console.log(verifyModule)
-
+        
         if (verifyModule.enabled) {
 
             var msgChannel = message.channel.id;

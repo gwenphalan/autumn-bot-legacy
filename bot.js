@@ -3,12 +3,10 @@ require('dotenv').config({path: __dirname + '/.env'})
 
 const { client } = require(__dirname + "/client.js");
 const Discord = require('discord.js');
-const con = require(__dirname + '/db.js');
-const Guild = require(__dirname + '/guild/guild')
-const router = require(___dirname + '/guild/router/router')
+const Guild = require('./guild/guild')
+const router = require(__dirname + '/guild/router/router')
 const bodyParser = require('body-parser');
 const express = require('express');
-const axios = require('axios');
 const app = express();
 const port = process.env['PORT'] || 3001;
 process.on('unhandledRejection', console.log);
@@ -20,7 +18,7 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 app.use(bodyParser.json());
-app.use(router);
+app.use('/webhook', router);
 
 app.get('/',function(req, res){
   res.redirect('https://www.autumnbot.net/');
@@ -28,31 +26,22 @@ app.get('/',function(req, res){
 
 app.listen(port)
 
-client.on("guildCreate", async function (guild) {
+async function setStatus()
+{
   await client.user.setPresence({
     activity: {
       name: client.guilds.cache.size + ' servers | -news',
       type: "LISTENING",
     }
   }).then(() => console.log('Status Set'));
+}
 
-  var guildInfo = new Guild(guild.id);
+client.on("guildCreate", async function (guild) {
+  // Update Cache and Database
+  Guild.addGuild(guild.id)
 
-  guildInfo.cacheGuild();
-  
-  var sql = `INSERT INTO guildsettings (Guild, VerifyModule, ModModule, VerifyApps) VALUES ('${guild.id}', '{"enabled":false}', '{"enabled":false}', '{}')`;
-  con.query(sql, function (err, result) {
-    if (err) throw err;
-    console.log("1 record inserted");
-    axios
-        .post(`http://localhost:3000/guild`)
-        .then(res => {
-            console.log("RES: " + res.data)
-        })
-        .catch(error => {
-            console.error(error)
-        })
-  })
+  // Update Status
+  setStatus()
 
   let welcome = new Discord.MessageEmbed()
     .setColor('#db583e')
@@ -75,24 +64,6 @@ client.on("guildCreate", async function (guild) {
 });
 
 client.on("guildDelete", async function (guild) {
-  var sql = `DELETE FROM guildsettings WHERE Guild = '${guild.id}'`;
-  con.query(sql, function (err, result) {
-    axios
-        .post(`http://localhost:3000/api/guild/update`)
-        .then(res => {
-            console.log("RES: " + res.data)
-        })
-        .catch(error => {
-            console.error(error)
-        })
-    if (err) throw err;
-    console.log("Number of records deleted: " + result.affectedRows);
-  });
-
-  await client.user.setPresence({
-    activity: {
-      name: client.guilds.cache.size + ' servers | -news',
-      type: "LISTENING",
-    }
-  }).then(() => console.log('Status Set'));
+  Guild.deleteGuild(guild.id)
+  setStatus();
 });

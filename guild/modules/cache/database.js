@@ -25,6 +25,17 @@ class Database {
         })
     }
 
+    static async fetchProfiles()
+    {
+        return new Promise((resolve, reject) => {
+            con.query(
+                "SELECT * FROM profiles",
+                (err, result) => {
+                    return err ? reject(err) : resolve(result);
+                })
+        })
+    }
+
     static async updateGuild(guildID, column, obj) {
         var validColumns = ["VerifyModule", "ModModule", "VerifyApps"];
 
@@ -43,6 +54,18 @@ class Database {
           })
     }
 
+    static async updateProfile(userID, profile) {
+        var value = jsonConvert.toJSON(profile);
+
+        return new Promise((resolve, reject) => {
+            con.query(
+                `UPDATE profiles SET profile = '${value}' WHERE userID = ${userID}`,
+                (err, result) => {
+                  return err ? reject(err) : resolve(result);
+                })
+          })
+    }
+
     static async addGuild(guildID) {
         var sql = `INSERT INTO guildsettings (Guild, VerifyModule, ModModule, VerifyApps) VALUES ('${guildID}', '{"enabled":false}', '{"enabled":false}', '{}')`;
         con.query(sql, function (err, result) {
@@ -54,6 +77,37 @@ class Database {
     static async deleteGuild(guildID)
     {
         var sql = `DELETE FROM guildsettings WHERE Guild = '${guildID}'`;
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+          console.log("Number of records deleted: " + result.affectedRows);
+        })
+    }
+
+    static addProfile(user) {
+      var profile = {
+        userID: user.id,
+        username: user.username,
+        tag: user.discriminator,
+        avatar: user.displayAvatarURL({format: 'png',dynamic: true,size: 512}),
+        color: "f13128",
+        pronouns: "n/a",
+        gender: "",
+        age: "",
+        biography: ""
+    };
+
+    var value = jsonConvert.toJSON(profile);
+  
+    var sql = `INSERT INTO profiles (userID, profile) VALUES ('${user.id}','${value}')`;
+  
+    con.query(sql, function (err, result) {
+    if (err) throw err;
+          console.log("1 record inserted");
+    });
+    }
+  
+    static deleteProfile(userID) {
+        var sql = `DELETE FROM profiles WHERE userID = '${userID}'`;
         con.query(sql, function (err, result) {
           if (err) throw err;
           console.log("Number of records deleted: " + result.affectedRows);

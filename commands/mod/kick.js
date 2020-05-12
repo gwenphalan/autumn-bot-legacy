@@ -2,7 +2,7 @@ const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
 const timestring = require('timestring');
 const prettyMs = require('pretty-ms');
-const { Guild } = require('../../guild.js');
+const Guild = require('../../guild/guild.js');
 const Discord = require('discord.js');
 
 function makeid(length) {
@@ -55,7 +55,7 @@ module.exports = class ClassName extends commando.Command {
     async run(msg, {member, reason}) {
         var guild = new Guild(msg.guild.id);
 
-        var mod = guild.ModModule;
+        var mod = guild.ModModule.settings;
 
         if(mod.enabled == false) return;
 
@@ -115,7 +115,7 @@ module.exports = class ClassName extends commando.Command {
 
         var idIsUnique = false;
 
-        var history = guild.getHistory(user.id);
+        var history = guild.ModModule.getHistory(user.id);
 
         while(!idIsUnique)
         {

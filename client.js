@@ -1,5 +1,4 @@
 const commando = require('discord.js-commando');
-const sqlite = require('sqlite');
 const path = require('path');
 const MySQL = require('mysql2/promise');
 const MySQLProvider = require(__dirname + '/discord.js-commando-mysqlprovider');

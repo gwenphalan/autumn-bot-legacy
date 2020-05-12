@@ -200,17 +200,7 @@ module.exports = class ClassName extends commando.Command {
             }
 
             msg.channel.send(response);
-            guild.ModModule.muteUser(user.id, "infinite", str, user.user.displayAvatarURL({
-                format: 'png',
-                dynamic: true,
-                size: 512
-            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
-                format: 'png',
-                dynamic: true,
-                size: 512
-            }), msg.author.discriminator);
-
-            guild.ModModule.addHistory(user.id, "infinite", id, "mute", str, user.user.displayAvatarURL({
+            guild.ModModule.muteUser(user.id, "infinite", id, str, user.user.displayAvatarURL({
                 format: 'png',
                 dynamic: true,
                 size: 512
@@ -264,17 +254,7 @@ module.exports = class ClassName extends commando.Command {
                 return;
             };
             msg.channel.send(response);
-            guild.ModModule.muteUser(user.id, timestring(time) * 1000, reason, user.user.displayAvatarURL({
-                format: 'png',
-                dynamic: true,
-                size: 512
-            }), user.user.username, user.user.discriminator, msg.author.id, msg.author.username, msg.author.displayAvatarURL({
-                format: 'png',
-                dynamic: true,
-                size: 512
-            }), msg.author.discriminator);
-
-            guild.ModModule.addHistory(user.id, timestring(time) * 1000, id, "mute", reason, user.user.displayAvatarURL({
+            guild.ModModule.muteUser(user.id, timestring(time) * 1000, id, reason, user.user.displayAvatarURL({
                 format: 'png',
                 dynamic: true,
                 size: 512

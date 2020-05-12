@@ -1,8 +1,7 @@
 const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
-const timestring = require('timestring');
 const prettyMs = require('pretty-ms');
-const { Guild } = require('../../guild.js');
+const Guild = require('../../guild/guild.js');
 const Discord = require('discord.js');
 
 function makeid(length) {
@@ -66,7 +65,7 @@ module.exports = class ClassName extends commando.Command {
     async run(msg, {member, action, id}) {
         var guild = new Guild(msg.guild.id);
 
-        var mod = guild.ModModule;
+        var mod = guild.ModModule.settings;
 
         if(mod.enabled == false) return;
 
@@ -116,7 +115,7 @@ module.exports = class ClassName extends commando.Command {
             return;
         }
 
-        var history = guild.getHistory(user.id);
+        var history = guild.ModModule.getHistory(user.id);
 
         delete history['userInfo'];
 
@@ -169,7 +168,7 @@ module.exports = class ClassName extends commando.Command {
 
 
             msg.channel.send(embed1);
-            guild.clearHistory(user.id);   
+            guild.ModModule.clearHistory(user.id);   
         }
         else if(action == 'remove')
         {
@@ -199,7 +198,7 @@ module.exports = class ClassName extends commando.Command {
                 .setColor(`#db583e`);
 
                 msg.channel.send(embed);
-                guild.removeHistory(user.id, id); 
+                guild.ModModule.removeHistory(user.id, id); 
             }
         }
         else

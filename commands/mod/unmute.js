@@ -1,8 +1,6 @@
 const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
-const timestring = require('timestring');
-const prettyMs = require('pretty-ms');
-const { Guild } = require('../../guild.js');
+const Guild = require('../../guild/guild.js');
 const Discord = require('discord.js');
 
 function memberFilterInexact(search) {
@@ -46,9 +44,9 @@ module.exports = class ClassName extends commando.Command {
 
         var guild = new Guild(msg.guild.id);
 
-        var mod = guild.ModModule;
+        var mod = guild.ModModule.settins;
 
-        var mutes = await guild.getMutes();
+        var mutes = mod.mutes ? mod.mutes : {};
 
         if (mod.enabled == false) return;
 
@@ -147,6 +145,6 @@ module.exports = class ClassName extends commando.Command {
         msg.channel.send(response)
 
         user.roles.remove(mutedRole);
-        guild.unmuteUser(user.id);
+        guild.ModModule.unmuteUser(user.id);
     }
 }

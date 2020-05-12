@@ -50,46 +50,11 @@ class ModModule {
         };
 
         Cache.updateMod(this.id, mod);
-        Database.updateGuild(this.id, "ModModule", mod);
+
+        this.addHistory(userID, 2592000000, warnID, "warn", reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag)
     }
 
-    banUser(userID, time, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
-        let mod = this.settings;
-
-        if (!mod.bans) {
-            mod.bans = {};
-        }
-
-        var date;
-
-        if (time == 'infinite') {
-            date = time;
-        }
-        else {
-            date = time + Date.now();
-        }
-
-        mod.bans[userID] =
-        {
-            time: date,
-            date: Date.now(),
-            reason: reason,
-            avatar: avatar,
-            username: username,
-            tag: tag,
-            staff: {
-                id: staffID,
-                username: staffUsername,
-                avatar: staffAvatar,
-                tag: staffTag
-            }
-        };
-
-        Cache.updateMod(this.id, mod);
-        Database.updateGuild(this.id, "ModModule", mod);
-    }
-
-    muteUser(userID, time, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
+    muteUser(userID, time, id, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
         let mod = this.settings;
 
         if (!mod.mutes) {
@@ -122,7 +87,45 @@ class ModModule {
         };
 
         Cache.updateMod(this.id, mod);
-        Database.updateGuild(this.id, "ModModule", mod);
+
+        this.addHistory(userID, time, id, "mute", reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag)
+    }
+
+    banUser(userID, time, id, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {
+        let mod = this.settings;
+
+        if (!mod.bans) {
+            mod.bans = {};
+        }
+
+        var date;
+
+        if (time == 'infinite') {
+            date = time;
+        }
+        else {
+            date = time + Date.now();
+        }
+
+        mod.bans[userID] =
+        {
+            time: date,
+            date: Date.now(),
+            reason: reason,
+            avatar: avatar,
+            username: username,
+            tag: tag,
+            staff: {
+                id: staffID,
+                username: staffUsername,
+                avatar: staffAvatar,
+                tag: staffTag
+            }
+        };
+
+        Cache.updateMod(this.id, mod);
+
+        this.addHistory(userID, time, id, "ban", reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag)
     }
 
     addHistory(userID, time, id, punishment, reason, avatar, username, tag, staffID, staffUsername, staffAvatar, staffTag) {

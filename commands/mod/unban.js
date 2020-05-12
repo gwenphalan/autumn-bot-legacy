@@ -1,8 +1,6 @@
 const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
-const timestring = require('timestring');
-const prettyMs = require('pretty-ms');
-const { Guild } = require('../../guild.js');
+const Guild = require('../../guild/guild.js');
 const Discord = require('discord.js');
 
 function banFilterInexact(search) {
@@ -52,7 +50,7 @@ module.exports = class ClassName extends commando.Command {
     async run(msg, { member, reason }) {
         var guild = new Guild(msg.guild.id);
 
-        var mod = await guild.ModModule;
+        var mod = await guild.ModModule.settings;
 
         if (mod.enabled == false) return;
         
@@ -115,10 +113,6 @@ module.exports = class ClassName extends commando.Command {
 
 
         var userID = user.id;
-        var bans = await guild.getBans();
-
-        var guildBans = await msg.guild.fetchBans();
-
 
         var response = new Discord.MessageEmbed()
         .setAuthor('Moderation', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
@@ -158,6 +152,6 @@ module.exports = class ClassName extends commando.Command {
         msg.channel.send(response)
 
         msg.guild.members.unban(userID);
-        guild.unbanUser(userID);
+        guild.ModModule.unbanUser(userID);
     }
 }

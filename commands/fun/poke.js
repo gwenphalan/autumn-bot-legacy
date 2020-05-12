@@ -71,7 +71,7 @@ module.exports = class ClassName extends commando.Command {
                 switch (Math.round(Math.random()*4))
                 {
                     case 0:
-                        poke.setDescription(`**${name1}** poked **${name12}**! I didn't know this was facebook...`);
+                        poke.setDescription(`**${name1}** poked **${name1}**! I didn't know this was facebook...`);
                         break;
                     case 1: 
                         poke.setDescription(`**${name1}** poked **${name2}**!`);
