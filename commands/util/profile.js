@@ -1,7 +1,7 @@
 const commando = require('discord.js-commando');
 const oneLine = require('common-tags').oneLine;
-const con = require('../../db.js');
 const Discord = require('discord.js');
+const Profile = require('../../guild/profile');
 
 module.exports = class ClassName extends commando.Command {
     constructor(client) {
@@ -27,25 +27,6 @@ module.exports = class ClassName extends commando.Command {
         })
     }
 
-    getProfile(userID) {
-        return new Promise((resolve, reject) => {
-            con.query(
-                "SELECT * FROM profiles WHERE userID = '" + userID + "' LIMIT 1",
-                (err, result) => {
-                    return err ? reject(err) : resolve(result[0]);
-                })
-        })
-    }
-
-    escapeSpecialChars(jsonString) {
-        return jsonString
-            .replace(/\n/g, "\\n")
-            .replace(/\r/g, "\\r")
-            .replace(/\t/g, "\\t")
-            .replace(/\f/g, "\\f");
-
-    }
-
     async run(msg, { targetUser }) {
 
         var noProfile = new Discord.MessageEmbed()
@@ -64,21 +45,23 @@ module.exports = class ClassName extends commando.Command {
             var user = targetUser.id;
         }
 
-        var profileInfo = await this.getProfile(user);
+        const profileOBJ = new Profile(user);
+
+        const profile = profileOBJ.settings;
+
+        console.log(profile);
         
-        if(!profileInfo)
+        if(!profile)
         {
             msg.channel.send(noProfile);
             msg.delete();
             return;
         }
-        var profile = JSON.parse(this.escapeSpecialChars(profileInfo.profile));
 
         var profileEmbed = new Discord.MessageEmbed()
         .setAuthor('Profiles', 'https://cdn.discordapp.com/avatars/672548437346222110/3dcd9d64a081c6781289b3e3ffda5aa2.png?size=256')
         .setTitle(`${profile.username}#${profile.tag}`)
         .setDescription(`${profile.biography}`)
-        .addField('Pronouns',profile.pronouns, true)
         .setColor(`#${profile.color}`)
         .setThumbnail(`https://cdn.discordapp.com/avatars/${profile.userID}/${profile.avatar}.png?size=512`)
         .setURL(`https://www.autumnbot.net/profile/${profile.userID}`)
@@ -91,6 +74,10 @@ module.exports = class ClassName extends commando.Command {
         if(profile.gender != '')
         {
             profileEmbed.addField('Gender',profile.gender,true)
+        }
+        if(profile.pronouns != 'n/a')
+        {
+            profileEmbed.addField('Pronouns',profile.pronouns, true)
         }
 
         msg.channel.send(profileEmbed);

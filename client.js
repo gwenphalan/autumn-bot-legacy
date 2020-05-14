@@ -1,23 +1,18 @@
 const commando = require('discord.js-commando');
-const sqlite = require('sqlite');
 const path = require('path');
 const MySQL = require('mysql2/promise');
 const MySQLProvider = require(__dirname + '/discord.js-commando-mysqlprovider');
 const oneLine = require('common-tags').oneLine;
-const apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjU0ODQzNzM0NjIyMjExMCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTgyNTk3MzQ3fQ.AOFlwDk84YGZBAdcRHSnmNYB05adjih6GRWONTR4VJk';
 const DBL = require("dblapi.js");
 
 const client = new commando.Client({
-  owner: '279910519467671554',
-  commandPrefix: '-',
-  invite: 'https://discord.gg/DfByvyN',
+  owner: process.env.BOT_OWNER,
+  commandPrefix: process.env.BOT_PREFIX,
+  invite: process.env.BOT_SUPPORT_INVITE,
   partials: ['MESSAGE', 'REACTION']
 });
 
-const dbl = new DBL(apiToken, client);
-
-const token = 'NjczNDI0MTkzODYxMTg5NjYx.XrLf6g.13JuyJLvzFXcK9Q3LOS_AC_V3c8';
-//const token = 'NjcyNTQ4NDM3MzQ2MjIyMTEw.XmPydA.C2hThK98Sz-r5t3jpOpeByFvkjY';
+const dbl = new DBL(process.env.DBL_API_TOKEN, client);
 
 client.on("ready", () => {
   console.log("Loading...");
@@ -27,7 +22,7 @@ client.on("ready", () => {
     clearInterval(interval);
   }, 100);
   setInterval(() => {
-      dbl.postStats(client.guilds.size, client.shards.Id, client.shards.total);
+    dbl.postStats(client.guilds.size);
   }, 1800000);
 });
 
@@ -35,13 +30,13 @@ client
   .on('error', console.error)
   .on('warn', console.warn)
   .on('debug', console.log)
-  .on('ready', async function(){
+  .on('ready', async function () {
     client.user.setStatus('available')
     await client.user.setPresence({
-        activity: {
-            name: client.guilds.cache.size + ' servers | -news',
-            type: "LISTENING",
-        }
+      activity: {
+        name: client.guilds.cache.size + ' servers | -news',
+        type: "LISTENING",
+      }
     }).then(() => console.log('Status Set'));
     console.log(`Client ready; logged in as ${client.user.username}#${client.user.discriminator} (${client.user.id})`);
   })
@@ -83,24 +78,19 @@ client.registry
   .registerGroup('fun', 'Fun')
   .registerDefaultGroups()
   .registerDefaultTypes()
-  .registerDefaultCommands({ help: false, eval: false, unknownCommand: false})
+  .registerDefaultCommands({ help: false, eval: false, unknownCommand: false })
   .registerTypesIn(path.join(__dirname, 'types'))
   .registerCommandsIn(path.join(__dirname, 'commands'));
 
-const SQL_HOST = "webserver3.pebblehost.com";
-const SQL_USER = "autumnfo_admin";
-const SQL_PASS = "9p4kd%DkOw96";
-const SQL_BASE = "autumnfo_discordbot";
-
 MySQL.createConnection({
-    host: SQL_HOST,
-    user: SQL_USER,
-    password: SQL_PASS,
-    database: SQL_BASE,
-    charset : 'utf8mb4'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+  charset: 'utf8mb4'
 }).then((db) => {
   client.setProvider(new MySQLProvider(db));
-  client.login(token);
+  client.login(process.env.BOT_TOKEN);
 });
 
 exports.client = client;
