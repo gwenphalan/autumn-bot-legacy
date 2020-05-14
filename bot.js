@@ -2,7 +2,24 @@
 const { client } = require(__dirname + "/client.js");
 const Discord = require('discord.js');
 const con = require(__dirname + '/db.js');
+const { Guild, router } = require(__dirname + '/guild.js');
+const bodyParser = require('body-parser');
 const verification = require(__dirname + "/modules/verification.js");
+const express = require('express');
+const app = express();
+const port = process.env['PORT'] || 3000;
+
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
+app.use(bodyParser.json());
+app.use(router);
+
+app.get('/',function(req, res){
+  res.redirect('https://www.autumnbot.net/');
+})
+
+app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
 
 client.on("guildCreate", async function (guild) {
   await client.user.setPresence({
@@ -11,6 +28,10 @@ client.on("guildCreate", async function (guild) {
       type: "LISTENING",
     }
   }).then(() => console.log('Status Set'));
+
+  var guildInfo = new Guild(guild.id);
+
+  guildInfo.cacheGuild();
 
   var sql = `INSERT INTO guildsettings (Guild, VerifyModule, ModModule, VerifyApps) VALUES ('${guild.id}', '{"enabled":false}', '{"enabled":false}', '{}')`;
   con.query(sql, function (err, result) {
