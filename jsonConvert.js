@@ -27,3 +27,5 @@ class jsonConvert {
     return JSON.parse(escapeSpecialChars(string));
   }
 }
+
+module.exports = jsonConvert;
