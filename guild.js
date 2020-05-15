@@ -3,6 +3,7 @@ const { client } = require(__dirname + "/client.js");
 const express = require("express");
 const { catchAsync } = require(__dirname + "/utils.js");
 const bodyParser = require("body-parser");
+const jsonConvert = require("./jsonConvert");
 
 var router = express.Router();
 router.use(
@@ -29,22 +30,6 @@ async function getGuildInfo(id) {
       }
     );
   });
-}
-
-function stringify(obj) {
-  var final = JSON.stringify(obj);
-
-  var a = 0;
-  var count = 0;
-  for (a = 0; a < JSON.stringify(obj).length; a++) {
-    if (JSON.stringify(obj).charAt(a) == "'") {
-      final = [final.slice(0, a + count), "\\", final.slice(a + count)].join(
-        ""
-      );
-      count++;
-    }
-  }
-  return final;
 }
 
 async function fetchCache() {
@@ -74,9 +59,9 @@ async function run() {
     console.log(modModuleJSON);
     console.log(verifyAppsJSON);
 
-    let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
-    let modModule = JSON.parse(escapeSpecialChars(modModuleJSON));
-    let verifyApps = JSON.parse(escapeSpecialChars(verifyAppsJSON));
+    let verifyModule = jsonConvert.toOBJ(verifyModuleJSON);
+    let modModule = jsonConvert.toOBJ(modModuleJSON);
+    let verifyApps = jsonConvert.toOBJ(verifyAppsJSON);
 
     var settings = {
       VerifyModule: verifyModule,
@@ -182,7 +167,7 @@ class Guild {
         if (err) throw err;
         console.log("1 record inserted");
       });
-    return setGuildInfo(this.guildID, moduleName, stringify(obj));
+    return setGuildInfo(this.guildID, moduleName, jsonConvert.toJSON(obj));
   }
 
   async getApps() {
@@ -208,7 +193,7 @@ class Guild {
     var result = await setGuildInfo(
       this.guildID,
       "VerifyApps",
-      stringify(apps)
+      jsonConvert.toJSON(apps)
     );
 
     return result;
@@ -283,7 +268,7 @@ class Guild {
 
     cache.set(this.guildID, settings);
 
-    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+    await setGuildInfo(this.guildID, "ModModule", jsonConvert.toJSON(mod));
   }
 
   async unbanUser(userID) {
@@ -297,7 +282,7 @@ class Guild {
 
     cache.set(this.guildID, settings);
 
-    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+    setGuildInfo(this.guildID, "ModModule", jsonConvert.toJSON(mod));
   }
 
   async muteUser(userID, time, reason, avatar, username, tag) {
@@ -332,7 +317,7 @@ class Guild {
 
     cache.set(this.guildID, settings);
 
-    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+    setGuildInfo(this.guildID, "ModModule", jsonConvert.toJSON(mod));
   }
 
   async warnUser(userID, warnID, reason, avatar, username, tag) {
@@ -362,7 +347,7 @@ class Guild {
 
     cache.set(this.guildID, settings);
 
-    setGuildInfo(this.guildID, "ModModule", stringify(mod));
+    setGuildInfo(this.guildID, "ModModule", jsonConvert.toJSON(mod));
   }
 
   async unmuteUser(userID) {
@@ -376,7 +361,7 @@ class Guild {
 
     delete mutes[userID];
 
-    await setGuildInfo(this.guildID, "ModModule", stringify(mod));
+    await setGuildInfo(this.guildID, "ModModule", jsonConvert.toJSON(mod));
   }
 
   async getBans() {
