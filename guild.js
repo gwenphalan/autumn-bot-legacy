@@ -70,6 +70,10 @@ async function run() {
     let modModuleJSON = guild.ModModule;
     let verifyAppsJSON = guild.VerifyApps;
 
+    console.log(verifyModuleJSON);
+    console.log(modModuleJSON);
+    console.log(verifyAppsJSON);
+
     let verifyModule = JSON.parse(escapeSpecialChars(verifyModuleJSON));
     let modModule = JSON.parse(escapeSpecialChars(modModuleJSON));
     let verifyApps = JSON.parse(escapeSpecialChars(verifyAppsJSON));
